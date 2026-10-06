@@ -1,0 +1,30 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  repository-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate required structure
+        run: |
+          set -euo pipefail
+          test -d frontend
+          test -d backend
+          test -d infra
+          test -d docs
+          test -f compose.yaml
+          test -f .env.example
+          test -f SECURITY.md
+          test -f CONTRIBUTING.md
+  compose-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cp .env.example .env
+      - run: docker compose config --quiet
