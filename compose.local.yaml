@@ -1,0 +1,44 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    command: [sh, -c, "python manage.py migrate --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --access-logfile -"]
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
+      DJANGO_DEBUG: "false"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend
+      DATABASE_NAME: ${DATABASE_NAME:-edumanage}
+      DATABASE_USER: ${DATABASE_USER:-edumanage}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-edumanage_local_only}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 6s
+      retries: 8
+      start_period: 20s
+    restart: unless-stopped
