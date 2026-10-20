@@ -1,5 +1,7 @@
 "use client";
 import Dashboard from "./dashboard";
+import PlanningWorkspace from "./planning-workspace";
+import type { PlanningPage } from "./planning-data";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -325,7 +327,20 @@ function Stat({
 
 export default function Home() {
   const [page, setPage] = useState<Page>("Curriculum");
-  const [showDashboard, setShowDashboard] = useState(true);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [planningPage, setPlanningPage] = useState<PlanningPage | null>(
+    "School Overview",
+  );
+  const [planningCommand, setPlanningCommand] = useState("");
+  const [academicYearOptions, setAcademicYearOptions] = useState([
+    "2026 - 2027",
+    "2025 - 2026",
+    "2024 - 2025",
+    "2023 - 2024",
+    "2022 - 2023",
+    "2021 - 2022",
+    "2020 - 2021",
+  ]);
   const [dashboardCommand, setDashboardCommand] = useState("");
   const [data, setData] = useState<Data>(initial);
   const [loaded, setLoaded] = useState(false);
@@ -359,7 +374,7 @@ export default function Home() {
   const [pageNumber, setPageNumber] = useState(1);
   const [expanded, setExpanded] = useState(false);
   useEffect(() => {
-    if (showDashboard || loaded) return;
+    if (showDashboard || planningPage || loaded) return;
     let active = true;
     fetch("/api/workspace")
       .then(async (response) => {
@@ -389,7 +404,7 @@ export default function Home() {
     return () => {
       active = false;
     };
-  }, [showDashboard]);
+  }, [showDashboard, planningPage]);
   useEffect(() => {
     if (!loaded || !csrfToken) return;
     setSaveStatus("Saving changes...");
@@ -439,6 +454,7 @@ export default function Home() {
   }, []);
   const notify = (text: string) => setToast(text);
   const openSchool = (command = "") => {
+    setPlanningPage(null);
     setShowDashboard(true);
     setDashboardCommand(command);
     setExpanded(false);
@@ -446,6 +462,7 @@ export default function Home() {
     setQuery("");
   };
   const navigate = (next: Page) => {
+    setPlanningPage(null);
     setShowDashboard(false);
     setExpanded(true);
     setPage(next);
@@ -473,6 +490,30 @@ export default function Home() {
     setFilters(false);
     setFromDate("");
     setToDate("");
+  };
+  const openPlanning = (next: PlanningPage, command = "") => {
+    setPlanningPage(next);
+    setPlanningCommand(command);
+    setShowDashboard(false);
+    setExpanded(next !== "School Overview");
+    setSidebar(false);
+    setQuery("");
+  };
+  const routeAcademic = (name: string) => {
+    if (
+      [
+        "School Overview",
+        "Academic Years",
+        "Academics Overview",
+        "Syllabus & Progress",
+        "Academic Calendar",
+      ].includes(name)
+    )
+      openPlanning(name as PlanningPage);
+    else if (name === "Overview") openPlanning("Academics Overview");
+    else if (["Subjects", "Grade Levels", "Terms & Semesters"].includes(name))
+      openPlanning("Academics Overview", name);
+    else navigate(name as Page);
   };
   const rows = useMemo(
     () =>
@@ -706,7 +747,9 @@ export default function Home() {
     curricula.find((c) => c.id === selectedCurriculum) || curricula[0];
   const totalSubjects = activeCurr?.subjects || 0;
   return (
-    <div className={`app-shell ${showDashboard ? "dashboard-shell" : ""}`}>
+    <div
+      className={`app-shell ${planningPage === "School Overview" ? "blue-overview-shell" : planningPage ? "planning-shell" : showDashboard ? "dashboard-shell" : ""}`}
+    >
       {sidebar && (
         <button
           className="sidebar-overlay"
@@ -720,7 +763,7 @@ export default function Home() {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            openSchool();
+            openPlanning("School Overview");
           }}
         >
           <span className="brand-mark">
@@ -734,6 +777,7 @@ export default function Home() {
         <nav aria-label="Main navigation">
           <div className="nav-main">
             {[
+              [LayoutDashboard, "Overview"],
               [LayoutDashboard, "Dashboard"],
               [Users, "Students"],
               [UserRound, "Teachers"],
@@ -744,12 +788,18 @@ export default function Home() {
                 <button
                   key={String(label)}
                   className={
-                    showDashboard && label === "Dashboard"
-                      ? "dashboard-nav-active"
+                    (planningPage === "School Overview" &&
+                      label === "Overview") ||
+                    (showDashboard && !planningPage && label === "Dashboard")
+                      ? planningPage === "School Overview"
+                        ? "p-nav-active"
+                        : "dashboard-nav-active"
                       : ""
                   }
                   onClick={() =>
-                    openSchool(label === "Dashboard" ? "" : String(label))
+                    label === "Overview"
+                      ? openPlanning("School Overview")
+                      : openSchool(label === "Dashboard" ? "" : String(label))
                   }
                 >
                   <I size={18} />
@@ -759,7 +809,7 @@ export default function Home() {
             })}
           </div>
           <button
-            className={`academics ${showDashboard ? "" : "active"}`}
+            className={`academics ${showDashboard || planningPage === "School Overview" ? "" : "active"}`}
             onClick={() => setExpanded(!expanded)}
           >
             <CalendarDays size={18} />
@@ -782,22 +832,26 @@ export default function Home() {
               ].map((label) => (
                 <button
                   key={label}
-                  className={!showDashboard && page === label ? "selected" : ""}
-                  onClick={() =>
-                    [
-                      "Curriculum",
-                      "Subject Allocation",
-                      "Lesson Plans",
-                    ].includes(label)
-                      ? navigate(label as Page)
-                      : notify(`${label} is outside this academic workspace`)
+                  className={
+                    !showDashboard &&
+                    (planningPage
+                      ? planningPage === label ||
+                        (planningPage === "Academics Overview" &&
+                          label === "Overview")
+                      : page === label)
+                      ? "selected"
+                      : ""
                   }
+                  onClick={() => routeAcademic(label)}
                 >
                   <span className="nav-plus">+</span>
                   {label}
-                  {!showDashboard && page === label && (
-                    <span className="nav-dot" />
-                  )}
+                  {!showDashboard &&
+                    (planningPage
+                      ? planningPage === label ||
+                        (planningPage === "Academics Overview" &&
+                          label === "Overview")
+                      : page === label) && <span className="nav-dot" />}
                 </button>
               ))}
             </div>
@@ -819,8 +873,12 @@ export default function Home() {
                 <button
                   key={String(label)}
                   className={
-                    showDashboard && label === "Dashboard"
-                      ? "dashboard-nav-active"
+                    (planningPage === "School Overview" &&
+                      label === "Overview") ||
+                    (showDashboard && !planningPage && label === "Dashboard")
+                      ? planningPage === "School Overview"
+                        ? "p-nav-active"
+                        : "dashboard-nav-active"
                       : ""
                   }
                   onClick={() =>
@@ -848,7 +906,7 @@ export default function Home() {
               );
             })}
           </div>
-          {showDashboard && (
+          {showDashboard && !planningPage && (
             <div className="sidebar-others">
               <small>OTHERS</small>
               <button
@@ -884,7 +942,8 @@ export default function Home() {
             </div>
           )}
         </nav>
-        {showDashboard && (
+        {(showDashboard ||
+          (planningPage && planningPage !== "School Overview")) && (
           <div className="sidebar-promo">
             <strong>
               Bright Future
@@ -892,6 +951,21 @@ export default function Home() {
               Starts Here
             </strong>
             <small>Education · Growth · Success</small>
+          </div>
+        )}
+        {planningPage === "School Overview" && (
+          <div className="p-blue-school-card">
+            <span>
+              <GraduationCap size={30} />
+            </span>
+            <div>
+              <strong>Bright Future School</strong>
+              <small>
+                Academic Year {year}
+                <br />
+                Term 1
+              </small>
+            </div>
           </div>
         )}
         <div className="sidebar-bottom">
@@ -931,11 +1005,7 @@ export default function Home() {
           <div className="topbar-right">
             <label className="year-selector">
               <small>Academic Year</small>
-              {select("Academic year", year, setYear, [
-                "2025 - 2026",
-                "2026 - 2027",
-                "2024 - 2025",
-              ])}
+              {select("Academic year", year, setYear, academicYearOptions)}
             </label>
             <div className="language">
               <span>🇺🇸</span>
@@ -1005,16 +1075,35 @@ export default function Home() {
                   setNotifications(false);
                 }}
               >
-                <Avatar name="John Doe" large />
+                <Avatar
+                  name={
+                    planningPage === "School Overview"
+                      ? "Admin User"
+                      : "John Doe"
+                  }
+                  large
+                />
                 <span>
-                  <strong>John Doe</strong>
-                  <small>Administrator</small>
+                  <strong>
+                    {planningPage === "School Overview"
+                      ? "Admin User"
+                      : "John Doe"}
+                  </strong>
+                  <small>
+                    {planningPage === "School Overview"
+                      ? "System Administrator"
+                      : "Administrator"}
+                  </small>
                 </span>
                 <ChevronDown size={14} />
               </button>
               {profile && (
                 <div className="popover profile-panel">
-                  <strong>John Doe</strong>
+                  <strong>
+                    {planningPage === "School Overview"
+                      ? "Admin User"
+                      : "John Doe"}
+                  </strong>
                   <p>School Administrator</p>
                   <span className="badge green">Academic workspace</span>
                   <p className="muted">
@@ -1026,7 +1115,20 @@ export default function Home() {
           </div>
         </header>
         <main>
-          {showDashboard ? (
+          {planningPage ? (
+            <PlanningWorkspace
+              page={planningPage}
+              year={year}
+              query={query}
+              notify={notify}
+              onNavigate={routeAcademic}
+              onSchoolCommand={openSchool}
+              onYearChange={setYear}
+              onYearsChange={setAcademicYearOptions}
+              command={planningCommand}
+              onCommandHandled={() => setPlanningCommand("")}
+            />
+          ) : showDashboard ? (
             <Dashboard
               year={year}
               query={query}
@@ -1057,11 +1159,12 @@ export default function Home() {
                   {page === "Curriculum" && (
                     <label className="year-selector">
                       <small>Academic Year</small>
-                      {select("Page academic year", year, setYear, [
-                        "2025 - 2026",
-                        "2026 - 2027",
-                        "2024 - 2025",
-                      ])}
+                      {select(
+                        "Page academic year",
+                        year,
+                        setYear,
+                        academicYearOptions,
+                      )}
                     </label>
                   )}
                   <button className="primary" onClick={create}>

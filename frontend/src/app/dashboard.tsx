@@ -326,6 +326,9 @@ export default function Dashboard({
       (
         {
           Students: "students",
+          "Add Student": "student",
+          "Add Teacher": "teacher",
+          "Create Class": "class",
           Teachers: "teachers",
           Classes: "classes",
           Reports: "reports",
@@ -339,7 +342,9 @@ export default function Dashboard({
     setSearch("");
     setForm({
       date: today,
-      status: "Present",
+      status: ["Add Student", "Add Teacher", "Create Class"].includes(command) ? "Active" : "Present",
+      className: "Grade 10A",
+      teacher: "",
       studentId: school.students[0]?.id || "",
     });
     onCommandHandled();

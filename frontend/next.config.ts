@@ -4,6 +4,10 @@ const config: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/api/planning",
+        destination: "http://backend:8000/api/v1/planning/",
+      },
+      {
         source: "/api/dashboard",
         destination: "http://backend:8000/api/v1/dashboard/",
       },

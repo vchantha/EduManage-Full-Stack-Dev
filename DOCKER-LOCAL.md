@@ -44,3 +44,9 @@ School-wide totals and financial/enrollment charts are demonstration data, with 
 Dashboard API tests: `python manage.py test apps.core.test_dashboard --noinput` inside the backend container.
 
 Banner image: generated with the built-in image tool. The saved prompt and asset notes are in frontend/ASSET-NOTES.md.
+
+## Additional reference pages
+
+Overview, Academic Years, Academics Overview, Syllabus & Progress, and Academic Calendar now share the navigation. Planning records are stored in the planning workspace in PostgreSQL. Academic year, term, topic, subject, material, and event forms save through the CSRF-protected planning API. Calendar supports month, week, list, type filters, and event editing. Sample school figures and schedules are demonstration data; the current date is 20 October 2026. The original orange Dashboard and curriculum, allocation, and lesson pages remain accessible.
+
+Validation: production Next.js build, Django system and migration checks, Ruff, 14 backend tests, and desktop browser review of the five new pages.
