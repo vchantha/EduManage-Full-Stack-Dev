@@ -327,10 +327,8 @@ function Stat({
 
 export default function Home() {
   const [page, setPage] = useState<Page>("Curriculum");
-  const [showDashboard, setShowDashboard] = useState(false);
-  const [planningPage, setPlanningPage] = useState<PlanningPage | null>(
-    "School Overview",
-  );
+  const [showDashboard, setShowDashboard] = useState(true);
+  const [planningPage, setPlanningPage] = useState<PlanningPage | null>(null);
   const [planningCommand, setPlanningCommand] = useState("");
   const [academicYearOptions, setAcademicYearOptions] = useState([
     "2026 - 2027",
@@ -763,7 +761,7 @@ export default function Home() {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            openPlanning("School Overview");
+            openSchool();
           }}
         >
           <span className="brand-mark">
@@ -1105,6 +1103,14 @@ export default function Home() {
                       : "John Doe"}
                   </strong>
                   <p>School Administrator</p>
+                  <button
+                    onClick={() => {
+                      openPlanning("School Overview");
+                      setProfile(false);
+                    }}
+                  >
+                    Open School Overview
+                  </button>
                   <span className="badge green">Academic workspace</span>
                   <p className="muted">
                     Your changes are saved to your school workspace.

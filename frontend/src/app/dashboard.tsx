@@ -342,7 +342,9 @@ export default function Dashboard({
     setSearch("");
     setForm({
       date: today,
-      status: ["Add Student", "Add Teacher", "Create Class"].includes(command) ? "Active" : "Present",
+      status: ["Add Student", "Add Teacher", "Create Class"].includes(command)
+        ? "Active"
+        : "Present",
       className: "Grade 10A",
       teacher: "",
       studentId: school.students[0]?.id || "",
@@ -377,7 +379,7 @@ export default function Dashboard({
     pending = baseline ? 34520 : 0;
   const enrollment =
     chartYear === "2025 - 2026"
-      ? [58, 94, 92, 105, 122, 108, 118, 128, 137, 112, 102, 92]
+      ? [58, 94, 92, 105, 122, 108, 118, 156, 137, 112, 102, 92]
       : chartYear === "2024 - 2025"
         ? [49, 76, 83, 94, 105, 99, 106, 112, 124, 103, 98, 87]
         : Array(12).fill(0);

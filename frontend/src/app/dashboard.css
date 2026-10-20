@@ -3,6 +3,23 @@
   background: linear-gradient(115deg, #1e2c3b, #172330);
   padding: 22px 14px 14px;
 }
+.dashboard-shell .nav-main > button:first-child {
+  display: none;
+}
+.dashboard-shell .global-search kbd {
+  display: none;
+}
+.dashboard-shell .sidebar-promo:before {
+  height: 120px;
+  background:
+    linear-gradient(to bottom, transparent 65%, #172330),
+    url("/school-campus.png") center / cover no-repeat;
+  opacity: 1;
+}
+.dashboard-shell .sidebar-promo {
+  padding-top: 120px;
+  min-height: 198px;
+}
 .dashboard-shell .workspace {
   width: calc(100% - 240px);
   margin-left: 240px;
@@ -1863,8 +1880,187 @@
     transform: none;
   }
 }
+/* Reference dashboard proportions at desktop sizes. */
+@media (min-width: 1451px) {
+  .dashboard-shell .sidebar {
+    padding-top: 17px;
+  }
+  .dashboard-shell .brand {
+    padding-bottom: 24px;
+  }
+  .dashboard-shell .sidebar nav button {
+    font-size: 13px;
+    min-height: 39px;
+  }
+  .dashboard-shell .sidebar-others button {
+    font-size: 12px !important;
+  }
+  .dashboard-shell .sidebar-others > small {
+    font-size: 10px;
+  }
+  .dashboard-shell .sidebar-promo strong {
+    font-size: 16px;
+  }
+  .dashboard-shell .sidebar-promo small {
+    font-size: 12px;
+  }
+  .dashboard-shell .welcome-copy p {
+    font-size: 14px;
+  }
+  .dashboard-shell .welcome-copy .primary {
+    font-size: 12px;
+  }
+  .dashboard-shell .welcome-quote > strong {
+    font-size: 14px;
+  }
+  .dashboard-shell .welcome-quote blockquote {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .dashboard-shell .welcome-quote cite {
+    font-size: 10px;
+  }
+  .dashboard-shell .dashboard-stat {
+    gap: 23px;
+  }
+  .dashboard-shell .dashboard-stat-icon {
+    width: 65px;
+    height: 65px;
+  }
+  .dashboard-shell .dashboard-stat-copy > span:first-child {
+    font-size: 13px;
+  }
+  .dashboard-shell .dashboard-stat-copy > strong {
+    font-size: 25px;
+  }
+  .dashboard-shell .dashboard-stat-copy > strong > small {
+    font-size: 12px;
+  }
+  .dashboard-shell .stat-caption {
+    font-size: 12px;
+  }
+  .dashboard-shell .dashboard-card-heading {
+    padding: 15px 18px 10px;
+  }
+  .dashboard-shell .dashboard-card-heading h2 {
+    font-size: 16px;
+  }
+  .dashboard-shell .dashboard-card-heading select {
+    font-size: 11px;
+  }
+  .dashboard-shell .dashboard-card-heading .view-all {
+    font-size: 11px;
+  }
+  .dashboard-shell .enrollment-y,
+  .dashboard-shell .enrollment-month > small {
+    font-size: 10px;
+  }
+  .dashboard-shell .enrollment-tooltip > span {
+    font-size: 10px;
+  }
+  .dashboard-shell .enrollment-tooltip > strong {
+    font-size: 12px;
+  }
+  .dashboard-shell .attendance-chart {
+    padding: 14px 18px 18px;
+    gap: 30px;
+  }
+  .dashboard-shell .attendance-legend > div,
+  .dashboard-shell .attendance-legend strong {
+    font-size: 11px;
+  }
+  .dashboard-shell .attendance-legend small {
+    font-size: 10px;
+  }
+  .dashboard-shell .quick-grid > button > span {
+    font-size: 11px;
+  }
+  .dashboard-shell .dashboard-bottom {
+    grid-template-columns: 1.16fr 1fr 1.07fr;
+  }
+  .dashboard-shell .dashboard-student-table td,
+  .dashboard-shell .dashboard-student-table th:first-child {
+    font-size: 11px;
+  }
+  .dashboard-shell .dashboard-student-table th {
+    font-size: 10px;
+  }
+  .dashboard-shell .dashboard-student-name strong {
+    font-size: 11px;
+  }
+  .dashboard-shell .dashboard-student-name small {
+    font-size: 10px;
+  }
+  .dashboard-shell .dashboard-student-table .badge {
+    font-size: 10px;
+  }
+  .dashboard-shell .event-content > strong {
+    font-size: 12px;
+  }
+  .dashboard-shell .event-content > small {
+    font-size: 11px;
+  }
+  .dashboard-shell .event-tag {
+    font-size: 11px;
+  }
+  .dashboard-shell .school-event {
+    min-height: 55px;
+  }
+  .dashboard-shell .finance-legend {
+    font-size: 11px;
+  }
+  .dashboard-shell .finance-summary strong {
+    font-size: 18px;
+  }
+  .dashboard-shell .finance-summary small {
+    font-size: 12px;
+  }
+}
+.dashboard-shell .welcome-copy:before {
+  content: "";
+  position: absolute;
+  width: 170px;
+  height: 280px;
+  background: linear-gradient(140deg, #ffb23d, #ff8d15);
+  border-radius: 100px 100px 0 0;
+  transform: rotate(38deg);
+  left: 30%;
+  top: 95px;
+  z-index: -1;
+  opacity: 0.8;
+}
+@media (max-width: 900px) {
+  .dashboard-shell .welcome-copy:before {
+    display: none;
+  }
+}
 @media (max-width: 700px) {
   .dashboard-stat.red .dashboard-stat-copy > strong > small {
     display: none;
   }
+}
+
+.dashboard-shell .language > span {
+  display: inline-block;
+  position: relative;
+  width: 20px;
+  height: 13px;
+  flex-shrink: 0;
+  font-size: 0;
+  background: repeating-linear-gradient(to bottom, #f34e62 0 1px, #fff 1px 2px);
+  border: 1px solid #e8eaf0;
+}
+.dashboard-shell .language > span:after {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 9px;
+  height: 7px;
+  background: #2f66b7;
+}
+@media (min-width: 1451px) {
+  .dashboard-shell .welcome-banner { padding-top: 14px; padding-bottom: 14px; }
+  .dashboard-shell .dashboard-stat { min-height: 105px; padding-top: 17px; padding-bottom: 17px; }
+  .dashboard-shell .enrollment-chart { height: 147px; }
+  .dashboard-shell .attendance-chart { min-height: 167px; }
 }
