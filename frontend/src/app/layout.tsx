@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./dashboard.css";
 export const metadata: Metadata = {
-  title: "EduManage · Academic workspace",
+  title: "EduManage · School Dashboard",
   description:
     "Curriculum, subject allocation and lesson planning for your school.",
 };

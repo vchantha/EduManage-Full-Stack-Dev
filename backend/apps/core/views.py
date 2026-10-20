@@ -6,6 +6,6 @@ from django.views.decorators.http import require_GET
 @require_GET
 def health(request):
     with connection.cursor() as cursor:
-        cursor.execute('SELECT 1')
+        cursor.execute("SELECT 1")
         cursor.fetchone()
-    return JsonResponse({'status': 'ok', 'database': 'ok'})
+    return JsonResponse({"status": "ok", "database": "ok"})

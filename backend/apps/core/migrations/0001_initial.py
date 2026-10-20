@@ -7,11 +7,16 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='AcademicWorkspace',
+            name="AcademicWorkspace",
             fields=[
-                ('name', models.CharField(default='default', max_length=50, primary_key=True, serialize=False)),
-                ('data', models.JSONField(default=dict)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "name",
+                    models.CharField(
+                        default="default", max_length=50, primary_key=True, serialize=False
+                    ),
+                ),
+                ("data", models.JSONField(default=dict)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
     ]

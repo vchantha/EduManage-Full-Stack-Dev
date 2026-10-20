@@ -1,4 +1,5 @@
 "use client";
+import Dashboard from "./dashboard";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -324,6 +325,8 @@ function Stat({
 
 export default function Home() {
   const [page, setPage] = useState<Page>("Curriculum");
+  const [showDashboard, setShowDashboard] = useState(true);
+  const [dashboardCommand, setDashboardCommand] = useState("");
   const [data, setData] = useState<Data>(initial);
   const [loaded, setLoaded] = useState(false);
   const [csrfToken, setCsrfToken] = useState("");
@@ -354,8 +357,9 @@ export default function Home() {
   const [calendarYear, setCalendarYear] = useState(2025);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   useEffect(() => {
+    if (showDashboard || loaded) return;
     let active = true;
     fetch("/api/workspace")
       .then(async (response) => {
@@ -385,7 +389,7 @@ export default function Home() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [showDashboard]);
   useEffect(() => {
     if (!loaded || !csrfToken) return;
     setSaveStatus("Saving changes...");
@@ -434,7 +438,16 @@ export default function Home() {
     return () => window.removeEventListener("keydown", close);
   }, []);
   const notify = (text: string) => setToast(text);
+  const openSchool = (command = "") => {
+    setShowDashboard(true);
+    setDashboardCommand(command);
+    setExpanded(false);
+    setSidebar(false);
+    setQuery("");
+  };
   const navigate = (next: Page) => {
+    setShowDashboard(false);
+    setExpanded(true);
     setPage(next);
     setTab(
       next === "Curriculum"
@@ -693,7 +706,7 @@ export default function Home() {
     curricula.find((c) => c.id === selectedCurriculum) || curricula[0];
   const totalSubjects = activeCurr?.subjects || 0;
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${showDashboard ? "dashboard-shell" : ""}`}>
       {sidebar && (
         <button
           className="sidebar-overlay"
@@ -707,7 +720,7 @@ export default function Home() {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            navigate("Curriculum");
+            openSchool();
           }}
         >
           <span className="brand-mark">
@@ -730,8 +743,13 @@ export default function Home() {
               return (
                 <button
                   key={String(label)}
+                  className={
+                    showDashboard && label === "Dashboard"
+                      ? "dashboard-nav-active"
+                      : ""
+                  }
                   onClick={() =>
-                    notify(`${label} is outside this academic workspace`)
+                    openSchool(label === "Dashboard" ? "" : String(label))
                   }
                 >
                   <I size={18} />
@@ -741,7 +759,7 @@ export default function Home() {
             })}
           </div>
           <button
-            className="academics active"
+            className={`academics ${showDashboard ? "" : "active"}`}
             onClick={() => setExpanded(!expanded)}
           >
             <CalendarDays size={18} />
@@ -764,7 +782,7 @@ export default function Home() {
               ].map((label) => (
                 <button
                   key={label}
-                  className={page === label ? "selected" : ""}
+                  className={!showDashboard && page === label ? "selected" : ""}
                   onClick={() =>
                     [
                       "Curriculum",
@@ -777,7 +795,9 @@ export default function Home() {
                 >
                   <span className="nav-plus">+</span>
                   {label}
-                  {page === label && <span className="nav-dot" />}
+                  {!showDashboard && page === label && (
+                    <span className="nav-dot" />
+                  )}
                 </button>
               ))}
             </div>
@@ -798,8 +818,21 @@ export default function Home() {
               return (
                 <button
                   key={String(label)}
+                  className={
+                    showDashboard && label === "Dashboard"
+                      ? "dashboard-nav-active"
+                      : ""
+                  }
                   onClick={() =>
-                    notify(`${label} is outside this academic workspace`)
+                    [
+                      "Reports",
+                      "Events",
+                      "Attendance",
+                      "Fees & Finance",
+                      "Settings",
+                    ].includes(String(label))
+                      ? openSchool(String(label))
+                      : notify(`${label} workspace is not available yet`)
                   }
                 >
                   <I size={18} />
@@ -815,7 +848,52 @@ export default function Home() {
               );
             })}
           </div>
+          {showDashboard && (
+            <div className="sidebar-others">
+              <small>OTHERS</small>
+              <button
+                onClick={() =>
+                  notify(
+                    "User management will be available when school login is configured",
+                  )
+                }
+              >
+                <Users size={18} />
+                <span>User Management</span>
+              </button>
+              <button
+                onClick={() =>
+                  notify(
+                    "Audit logs are not available in this local demonstration",
+                  )
+                }
+              >
+                <Clock3 size={18} />
+                <span>Audit Logs</span>
+              </button>
+              <button
+                onClick={() =>
+                  notify(
+                    "Use the quick actions to add records. Open Academics to manage curriculum and lesson plans.",
+                  )
+                }
+              >
+                <HelpCircle size={18} />
+                <span>Help & Support</span>
+              </button>
+            </div>
+          )}
         </nav>
+        {showDashboard && (
+          <div className="sidebar-promo">
+            <strong>
+              Bright Future
+              <br />
+              Starts Here
+            </strong>
+            <small>Education · Growth · Success</small>
+          </div>
+        )}
         <div className="sidebar-bottom">
           <div className="school-symbol">
             <GraduationCap size={19} />
@@ -842,7 +920,11 @@ export default function Home() {
               aria-label="Search academic workspace"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search students, teachers, classes, subjects..."
+              placeholder={
+                showDashboard
+                  ? "Search students, teachers, classes, fees..."
+                  : "Search students, teachers, classes, subjects..."
+              }
             />
             <kbd>⌘ K</kbd>
           </div>
@@ -944,954 +1026,999 @@ export default function Home() {
           </div>
         </header>
         <main>
-          <div className="page-heading">
-            <div>
-              <span className="eyebrow">ACADEMIC MANAGEMENT</span>
-              <h1>{page}</h1>
-              <div className="breadcrumb">
-                <button onClick={() => navigate("Curriculum")}>
-                  Dashboard
-                </button>
-                <ChevronRight size={13} />
-                <span>
-                  {page === "Curriculum"
-                    ? "Add, structure, map subjects to grade levels and organize learning programs."
-                    : page === "Subject Allocation"
-                      ? "Assign subjects and teachers for each academic term."
-                      : "Create and track teachers’ lesson plans and teaching materials."}
-                </span>
-              </div>
-            </div>
-            <div className="heading-actions">
-              {page === "Curriculum" && (
-                <label className="year-selector">
-                  <small>Academic Year</small>
-                  {select("Page academic year", year, setYear, [
-                    "2025 - 2026",
-                    "2026 - 2027",
-                    "2024 - 2025",
-                  ])}
-                </label>
-              )}
-              <button className="primary" onClick={create}>
-                <Plus size={17} />
-                {actionName}
-              </button>
-            </div>
-          </div>
-          <section className="stats-grid" aria-label="Academic summary">
-            {page === "Curriculum" ? (
-              <>
-                <Stat
-                  title="Active Curricula"
-                  value={curricula.filter((r) => r.status === "Active").length}
-                  note="Across All Levels"
-                  color="blue"
-                  icon={BookOpen}
-                />
-                <Stat
-                  title="Grade Levels"
-                  value="12"
-                  note="With Curriculum"
-                  color="green"
-                  icon={Layers}
-                />
-                <Stat
-                  title="Subjects Mapped"
-                  value={totalSubjects}
-                  note="In Curriculum"
-                  color="orange"
-                  icon={BookOpen}
-                />
-                <Stat
-                  title="Learning Areas"
-                  value="24"
-                  note="Knowledge Domains"
-                  color="purple"
-                  icon={Shapes}
-                />
-              </>
-            ) : page === "Subject Allocation" ? (
-              <>
-                <Stat
-                  title="Total Classes"
-                  value={allocations.length}
-                  note="This Year"
-                  color="blue"
-                  icon={Users}
-                />
-                <Stat
-                  title="Assigned Subjects"
-                  value={allocations.reduce((n, r) => n + r.subjects, 0)}
-                  note="Across Classes"
-                  color="orange"
-                  icon={CalendarDays}
-                />
-                <Stat
-                  title="Teachers Involved"
-                  value={new Set(allocations.map((r) => r.teacher)).size}
-                  note="Across All Classes"
-                  color="purple"
-                  icon={Users}
-                />
-                <Stat
-                  title="Allocation Completed"
-                  value={`${Math.round((allocations.filter((r) => r.status === "Complete").length / Math.max(allocations.length, 1)) * 100)}%`}
-                  note="Current Term"
-                  color="green"
-                  icon={ShieldCheck}
-                />
-              </>
-            ) : (
-              <>
-                <Stat
-                  title="Total Lesson Plans"
-                  value={lessons.length}
-                  note="This Term"
-                  color="blue"
-                  icon={BookOpen}
-                />
-                <Stat
-                  title="Approved Plans"
-                  value={lessons.filter((r) => r.status === "Approved").length}
-                  note="Ready for the classroom"
-                  color="green"
-                  icon={ShieldCheck}
-                />
-                <Stat
-                  title="Pending Review"
-                  value={lessons.filter((r) => r.status === "Pending").length}
-                  note="Awaiting approval"
-                  color="orange"
-                  icon={Users}
-                />
-                <Stat
-                  title="Needs Revision"
-                  value={
-                    lessons.filter((r) => r.status === "Needs Revision").length
-                  }
-                  note="Feedback requested"
-                  color="red"
-                  icon={FileCheck2}
-                />
-              </>
-            )}
-          </section>
-          <section className="panel records-panel">
-            <div
-              className={`panel-toolbar ${page !== "Curriculum" ? "stacked" : ""}`}
-            >
-              {page === "Curriculum" && (
-                <div
-                  className="tabs"
-                  role="tablist"
-                  aria-label="Curriculum views"
-                >
-                  {tabs.map((t) => (
-                    <button
-                      role="tab"
-                      aria-selected={tab === t}
-                      key={t}
-                      className={tab === t ? "active" : ""}
-                      onClick={() => setTab(t)}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className="filters">
-                {page !== "Curriculum" && (
-                  <>
-                    {select("Term", term, setTerm, [
-                      "Term 1",
-                      "Term 2",
-                      "Term 3",
-                    ])}
-                    {select("Grade or class", level, setLevel, [
-                      page === "Subject Allocation"
-                        ? "All Grades"
-                        : "All Classes",
-                      ...levels,
-                    ])}
-                    {select("Teacher", teacher, setTeacher, [
-                      "All Teachers",
-                      ...teachers,
-                    ])}
-                    {select("Subject", subject, setSubject, [
-                      "All Subjects",
-                      "Mathematics",
-                      "Science",
-                      "English",
-                      "History",
-                      "Chemistry",
-                    ])}
-                  </>
-                )}
-                <div className="table-search">
-                  <Search size={15} />
-                  <input
-                    aria-label={`Search ${page.toLowerCase()}`}
-                    placeholder={
-                      page === "Curriculum"
-                        ? "Search curriculum by name, code..."
-                        : page === "Subject Allocation"
-                          ? "Search by class, subject, or teacher..."
-                          : "Search lesson plan by title, subject..."
-                    }
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                </div>
-                {page === "Curriculum" &&
-                  select("Applicable level", level, setLevel, [
-                    "All Levels",
-                    ...levels,
-                  ])}
-                {select("Status", status, setStatus, [
-                  "All Status",
-                  ...(page === "Curriculum"
-                    ? ["Active", "Draft", "Inactive"]
-                    : page === "Subject Allocation"
-                      ? ["Complete", "Pending"]
-                      : ["Approved", "Pending", "Needs Revision"]),
-                ])}
-                {page === "Curriculum" && (
-                  <button
-                    className={`secondary filter-button ${filters ? "chosen" : ""}`}
-                    onClick={() => setFilters(!filters)}
-                  >
-                    <SlidersHorizontal size={14} />
-                    More Filters
-                  </button>
-                )}
-                <button className="secondary export" onClick={exportCsv}>
-                  <Download size={14} />
-                  Export
-                </button>
-              </div>
-            </div>
-            {filters && (
-              <div className="advanced-filters">
-                <span>
-                  <SlidersHorizontal size={15} /> Effective date
-                </span>
-                <label>
-                  From{" "}
-                  <input
-                    aria-label="Effective date from"
-                    type="date"
-                    value={fromDate}
-                    onChange={(e) => setFromDate(e.target.value)} onInput={(e) => setFromDate(e.currentTarget.value)}
-                  />
-                </label>
-                <label>
-                  To{" "}
-                  <input
-                    aria-label="Effective date to"
-                    type="date"
-                    value={toDate}
-                    min={fromDate}
-                    onChange={(e) => setToDate(e.target.value)} onInput={(e) => setToDate(e.currentTarget.value)}
-                  />
-                </label>
-                <button
-                  className="text-button"
-                  onClick={() => {
-                    setQuery("");
-                    setLevel("All Levels");
-                    setStatus("All Status");
-                    setFromDate("");
-                    setToDate("");
-                  }}
-                >
-                  Clear all filters
-                </button>
-                <span className="muted">
-                  Showing {rows.length} matching curricula · {year}
-                </span>
-              </div>
-            )}
-            {page !== "Curriculum" && (
-              <div
-                className="tabs secondary-tabs"
-                role="tablist"
-                aria-label={`${page} views`}
-              >
-                {tabs.map((t) => (
-                  <button
-                    key={t}
-                    role="tab"
-                    aria-selected={tab === t}
-                    className={tab === t ? "active" : ""}
-                    onClick={() => setTab(t)}
-                  >
-                    {t}
-                    {t === "Pending Review" && (
-                      <span className="tab-count">
-                        {lessons.filter((r) => r.status === "Pending").length}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-            <div className={page === "Lesson Plans" ? "lesson-layout" : ""}>
-              {page === "Lesson Plans" && (
-                <aside className="calendar-sidebar">
-                  <div className="calendar-heading">
-                    <button
-                      aria-label="Previous month"
-                      onClick={() => shiftMonth(-1)}
-                    >
-                      <ChevronLeft size={14} />
-                    </button>
-                    <strong>
-                      {new Date(calendarYear, calendarMonth).toLocaleDateString(
-                        "en-US",
-                        { month: "long", year: "numeric" },
-                      )}
-                    </strong>
-                    <button
-                      aria-label="Next month"
-                      onClick={() => shiftMonth(1)}
-                    >
-                      <ChevronRight size={14} />
-                    </button>
-                  </div>
-                  <div className="calendar-grid">
-                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-                      <span className="day-label" key={d}>
-                        {d}
-                      </span>
-                    ))}
-                    {Array.from(
-                      {
-                        length: new Date(
-                          calendarYear,
-                          calendarMonth,
-                          1,
-                        ).getDay(),
-                      },
-                      (_, i) => (
-                        <span key={`blank${i}`} />
-                      ),
-                    )}
-                    {Array.from(
-                      {
-                        length: new Date(
-                          calendarYear,
-                          calendarMonth + 1,
-                          0,
-                        ).getDate(),
-                      },
-                      (_, i) => (
-                        <button
-                          key={i}
-                          className={`${selectedDay === i + 1 ? "selected" : ""} ${[6, 7, 8].includes(i + 1) && calendarMonth === 9 ? "has-lesson" : ""}`}
-                          onClick={() =>
-                            setSelectedDay(selectedDay === i + 1 ? null : i + 1)
-                          }
-                        >
-                          {i + 1}
-                        </button>
-                      ),
-                    )}
-                  </div>
-                  {selectedDay && (
-                    <button
-                      className="text-button"
-                      onClick={() => setSelectedDay(null)}
-                    >
-                      Clear date filter
-                    </button>
-                  )}
-                  <h3>Upcoming Lessons</h3>
-                  {lessons.slice(0, 4).map((r, i) => (
-                    <button
-                      className="upcoming"
-                      key={r.id}
-                      onClick={() => open("view", r)}
-                    >
-                      <time>{r.time}</time>
-                      <span className={`mini-icon color-${i}`}>
-                        <BookOpen size={12} />
-                      </span>
-                      <span>
-                        <strong>
-                          {r.className} · {r.subject}
-                        </strong>
-                        <small>{r.name}</small>
-                      </span>
-                    </button>
-                  ))}
-                  <div className="calendar-note">
-                    <CalendarDays size={17} />
+          {showDashboard ? (
+            <Dashboard
+              year={year}
+              query={query}
+              notify={notify}
+              onNavigate={navigate}
+              command={dashboardCommand}
+              onCommandHandled={() => setDashboardCommand("")}
+            />
+          ) : (
+            <>
+              <div className="page-heading">
+                <div>
+                  <span className="eyebrow">ACADEMIC MANAGEMENT</span>
+                  <h1>{page}</h1>
+                  <div className="breadcrumb">
+                    <button onClick={() => openSchool()}>Dashboard</button>
+                    <ChevronRight size={13} />
                     <span>
-                      A little planning.
-                      <br />
-                      <strong>A lot of possibility.</strong>
+                      {page === "Curriculum"
+                        ? "Add, structure, map subjects to grade levels and organize learning programs."
+                        : page === "Subject Allocation"
+                          ? "Assign subjects and teachers for each academic term."
+                          : "Create and track teachers’ lesson plans and teaching materials."}
                     </span>
                   </div>
-                </aside>
-              )}
-              {page === "Curriculum" && tab === "Learning Areas" ? (
-                <div className="learning-grid">
-                  {domains.map(([name, count, color]) => (
-                    <article key={name}>
-                      <span style={{ color, background: `${color}15` }}>
-                        <Shapes size={23} />
-                      </span>
-                      <h3>{name}</h3>
-                      <p>{count} subjects in this learning area</p>
-                      <button
-                        className="text-button"
-                        onClick={() => {
-                          setTab("Subject Mapping");
-                          setQuery("");
-                        }}
-                      >
-                        View subject mapping <ArrowUpRight size={14} />
-                      </button>
-                    </article>
-                  ))}
                 </div>
-              ) : page === "Curriculum" && tab === "Subject Mapping" ? (
-                <div className="mapping-view">
-                  <div className="mapping-heading">
-                    <h3>National Curriculum · Subject Mapping</h3>
-                    <span className="muted">Subjects per grade level</span>
-                  </div>
-                  <div className="table-scroll">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>LEARNING AREA</th>
-                          {[
-                            "KG",
-                            "G1",
-                            "G2",
-                            "G3",
-                            "G4",
-                            "G5",
-                            "G6",
-                            "G7",
-                            "G8",
-                            "G9",
-                            "G10",
-                            "G11",
-                            "G12",
-                          ].map((g) => (
-                            <th key={g}>{g}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {domains.map(([name, , color], i) => (
-                          <tr key={name}>
-                            <td>
-                              <span
-                                className="legend-dot"
-                                style={{ background: color }}
-                              />
-                              {name}
-                            </td>
-                            {Array.from({ length: 13 }, (_, j) => (
-                              <td key={j}>
-                                {j === 0 && i > 3 ? (
-                                  <span className="muted">—</span>
-                                ) : (
-                                  <Check size={14} className="mapping-check" />
-                                )}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                <div className="heading-actions">
+                  {page === "Curriculum" && (
+                    <label className="year-selector">
+                      <small>Academic Year</small>
+                      {select("Page academic year", year, setYear, [
+                        "2025 - 2026",
+                        "2026 - 2027",
+                        "2024 - 2025",
+                      ])}
+                    </label>
+                  )}
+                  <button className="primary" onClick={create}>
+                    <Plus size={17} />
+                    {actionName}
+                  </button>
                 </div>
-              ) : page === "Curriculum" && tab === "Versions & History" ? (
-                <div className="history-view">
-                  <h3>Curriculum version history</h3>
-                  {curricula.map((r) => (
-                    <div className="history-row" key={r.id}>
-                      <span className="history-dot">
-                        <Check size={14} />
-                      </span>
-                      <div>
-                        <strong>{r.name}</strong>
-                        <p>
-                          {r.version} ·{" "}
-                          {r.status === "Draft"
-                            ? "Draft created"
-                            : "Curriculum published"}{" "}
-                          · {fmtDate(r.date)}
-                        </p>
-                      </div>
-                      <Badge status={r.status} />
-                      <button
-                        className="secondary"
-                        onClick={() => open("view", r)}
-                      >
-                        View version
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : page === "Subject Allocation" && tab !== "Class View" ? (
-                <div className="table-scroll">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>
-                          {tab === "Teacher View" ? "TEACHER" : "SUBJECT"}
-                        </th>
-                        <th>ASSIGNED CLASSES</th>
-                        <th>TOTAL SUBJECTS</th>
-                        <th>STATUS</th>
-                        <th>ACTIONS</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(tab === "Teacher View"
-                        ? teachers
-                        : [
-                            "Mathematics",
-                            "Science",
-                            "English",
-                            "History",
-                            "Chemistry",
-                          ]
-                      ).map((name, i) => {
-                        const assignments =
-                          tab === "Teacher View"
-                            ? rows.filter((r) => r.teacher === name)
-                            : rows.filter((r) => r.subject === name);
-                        return (
-                          <tr key={name}>
-                            <td>{i + 1}</td>
-                            <td>
-                              <span className="teacher-cell">
-                                {tab === "Teacher View" && (
-                                  <Avatar name={name} />
-                                )}
-                                <strong>{name}</strong>
-                              </span>
-                            </td>
-                            <td>
-                              {assignments.map((r) => r.name).join(", ") ||
-                                "No assignments"}
-                            </td>
-                            <td>
-                              {assignments.reduce((n, r) => n + r.subjects, 0)}
-                            </td>
-                            <td>
-                              <Badge
-                                status={
-                                  assignments.length ? "Complete" : "Pending"
-                                }
-                              />
-                            </td>
-                            <td>
-                              <button className="secondary" onClick={create}>
-                                <Plus size={13} />
-                                Allocate
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="table-area">
-                  <div className="table-scroll">
-                    <table
-                      className={
-                        page === "Curriculum" ? "curriculum-table" : ""
+              </div>
+              <section className="stats-grid" aria-label="Academic summary">
+                {page === "Curriculum" ? (
+                  <>
+                    <Stat
+                      title="Active Curricula"
+                      value={
+                        curricula.filter((r) => r.status === "Active").length
                       }
+                      note="Across All Levels"
+                      color="blue"
+                      icon={BookOpen}
+                    />
+                    <Stat
+                      title="Grade Levels"
+                      value="12"
+                      note="With Curriculum"
+                      color="green"
+                      icon={Layers}
+                    />
+                    <Stat
+                      title="Subjects Mapped"
+                      value={totalSubjects}
+                      note="In Curriculum"
+                      color="orange"
+                      icon={BookOpen}
+                    />
+                    <Stat
+                      title="Learning Areas"
+                      value="24"
+                      note="Knowledge Domains"
+                      color="purple"
+                      icon={Shapes}
+                    />
+                  </>
+                ) : page === "Subject Allocation" ? (
+                  <>
+                    <Stat
+                      title="Total Classes"
+                      value={allocations.length}
+                      note="This Year"
+                      color="blue"
+                      icon={Users}
+                    />
+                    <Stat
+                      title="Assigned Subjects"
+                      value={allocations.reduce((n, r) => n + r.subjects, 0)}
+                      note="Across Classes"
+                      color="orange"
+                      icon={CalendarDays}
+                    />
+                    <Stat
+                      title="Teachers Involved"
+                      value={new Set(allocations.map((r) => r.teacher)).size}
+                      note="Across All Classes"
+                      color="purple"
+                      icon={Users}
+                    />
+                    <Stat
+                      title="Allocation Completed"
+                      value={`${Math.round((allocations.filter((r) => r.status === "Complete").length / Math.max(allocations.length, 1)) * 100)}%`}
+                      note="Current Term"
+                      color="green"
+                      icon={ShieldCheck}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Stat
+                      title="Total Lesson Plans"
+                      value={lessons.length}
+                      note="This Term"
+                      color="blue"
+                      icon={BookOpen}
+                    />
+                    <Stat
+                      title="Approved Plans"
+                      value={
+                        lessons.filter((r) => r.status === "Approved").length
+                      }
+                      note="Ready for the classroom"
+                      color="green"
+                      icon={ShieldCheck}
+                    />
+                    <Stat
+                      title="Pending Review"
+                      value={
+                        lessons.filter((r) => r.status === "Pending").length
+                      }
+                      note="Awaiting approval"
+                      color="orange"
+                      icon={Users}
+                    />
+                    <Stat
+                      title="Needs Revision"
+                      value={
+                        lessons.filter((r) => r.status === "Needs Revision")
+                          .length
+                      }
+                      note="Feedback requested"
+                      color="red"
+                      icon={FileCheck2}
+                    />
+                  </>
+                )}
+              </section>
+              <section className="panel records-panel">
+                <div
+                  className={`panel-toolbar ${page !== "Curriculum" ? "stacked" : ""}`}
+                >
+                  {page === "Curriculum" && (
+                    <div
+                      className="tabs"
+                      role="tablist"
+                      aria-label="Curriculum views"
                     >
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          {(page === "Curriculum"
-                            ? [
-                                "CURRICULUM NAME",
-                                "CODE",
-                                "DESCRIPTION",
-                                "APPLICABLE LEVELS",
-                                "TOTAL SUBJECTS",
-                                "VERSION",
-                                "STATUS",
-                                "EFFECTIVE DATE",
-                              ]
-                            : page === "Subject Allocation"
-                              ? [
-                                  "CLASS",
-                                  "GRADE",
-                                  "SUBJECTS ASSIGNED",
-                                  "MAIN TEACHER",
-                                  "ROOM",
-                                  "STATUS",
-                                ]
-                              : [
-                                  "DATE",
-                                  "TITLE",
-                                  "SUBJECT",
-                                  "CLASS",
-                                  "TEACHER",
-                                  "STATUS",
-                                ]
-                          ).map((h) => (
-                            <th key={h}>{h}</th>
-                          ))}
-                          <th className="actions-heading">ACTIONS</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {visible.map((r, index) => (
-                          <tr key={r.id}>
-                            <td>{(pageNumber - 1) * pageSize + index + 1}</td>
-                            {page === "Curriculum" ? (
-                              <>
-                                <td>
-                                  <button
-                                    className="name-cell"
-                                    onClick={() => open("view", r)}
-                                  >
-                                    <span
-                                      className={`mini-icon color-${index % 5}`}
-                                    >
-                                      <BookOpen size={12} />
-                                    </span>
-                                    <strong>{r.name}</strong>
-                                  </button>
-                                </td>
-                                <td>{r.code}</td>
-                                <td className="description-cell">
-                                  {r.description}
-                                </td>
-                                <td>{r.levels}</td>
-                                <td className="center">{r.subjects}</td>
-                                <td>{r.version}</td>
-                                <td>
-                                  <Badge status={r.status} />
-                                </td>
-                                <td>{fmtDate(r.date)}</td>
-                              </>
-                            ) : page === "Subject Allocation" ? (
-                              <>
-                                <td>
-                                  <button
-                                    className="name-cell"
-                                    onClick={() => open("view", r)}
-                                  >
-                                    <strong>{r.name}</strong>
-                                  </button>
-                                </td>
-                                <td>{r.levels.replace("Grade ", "")}</td>
-                                <td>{r.subjects} subjects</td>
-                                <td>
-                                  <span className="teacher-cell">
-                                    <Avatar name={r.teacher} />
-                                    {r.teacher}
-                                  </span>
-                                </td>
-                                <td>{r.room}</td>
-                                <td>
-                                  <Badge status={r.status} />
-                                </td>
-                              </>
-                            ) : (
-                              <>
-                                <td>{fmtDate(r.date)}</td>
-                                <td>
-                                  <button
-                                    className="name-cell"
-                                    onClick={() => open("view", r)}
-                                  >
-                                    {r.name}
-                                  </button>
-                                </td>
-                                <td>{r.subject}</td>
-                                <td>{r.className}</td>
-                                <td>
-                                  <span className="teacher-cell">
-                                    <Avatar name={r.teacher} />
-                                    {r.teacher}
-                                  </span>
-                                </td>
-                                <td>
-                                  <Badge status={r.status} />
-                                </td>
-                              </>
-                            )}
-                            <td>
-                              <div className="row-actions">
-                                <button
-                                  aria-label={`View ${r.name}`}
-                                  title="View details"
-                                  onClick={() => open("view", r)}
-                                >
-                                  <Eye size={14} />
-                                </button>
-                                <button
-                                  aria-label={`Edit ${r.name}`}
-                                  title="Edit"
-                                  onClick={() => open("edit", r)}
-                                >
-                                  <Pencil size={13} />
-                                </button>
-                                <div className="popover-anchor">
-                                  <button
-                                    aria-label={`More actions for ${r.name}`}
-                                    title="More actions"
-                                    onClick={() =>
-                                      setActiveMenu(
-                                        activeMenu === r.id ? null : r.id,
-                                      )
-                                    }
-                                  >
-                                    <MoreVertical size={14} />
-                                  </button>
-                                  {activeMenu === r.id && (
-                                    <div className="row-menu">
-                                      <button
-                                        onClick={() => {
-                                          setData((prev) => ({
-                                            ...prev,
-                                            [page]: [
-                                              ...prev[page],
-                                              {
-                                                ...r,
-                                                id: `${Date.now()}`,
-                                                name: `${r.name} (copy)`,
-                                              },
-                                            ],
-                                          }));
-                                          setActiveMenu(null);
-                                          notify("Record duplicated");
-                                        }}
-                                      >
-                                        <Layers size={14} />
-                                        Duplicate
-                                      </button>
-                                      <button
-                                        className="danger"
-                                        onClick={() => open("delete", r)}
-                                      >
-                                        <Trash2 size={14} />
-                                        Delete
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    {!visible.length && (
-                      <div className="empty-state">
-                        <Search size={32} />
-                        <h3>No matching records</h3>
-                        <p>Try another search or clear your filters.</p>
+                      {tabs.map((t) => (
                         <button
-                          className="secondary"
-                          onClick={() => {
-                            setQuery("");
-                            setLevel("All Levels");
-                            setStatus("All Status");
-                            setTeacher("All Teachers");
-                            setSubject("All Subjects");
-                            setSelectedDay(null);
-                          }}
+                          role="tab"
+                          aria-selected={tab === t}
+                          key={t}
+                          className={tab === t ? "active" : ""}
+                          onClick={() => setTab(t)}
                         >
-                          Clear filters
+                          {t}
                         </button>
-                      </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="filters">
+                    {page !== "Curriculum" && (
+                      <>
+                        {select("Term", term, setTerm, [
+                          "Term 1",
+                          "Term 2",
+                          "Term 3",
+                        ])}
+                        {select("Grade or class", level, setLevel, [
+                          page === "Subject Allocation"
+                            ? "All Grades"
+                            : "All Classes",
+                          ...levels,
+                        ])}
+                        {select("Teacher", teacher, setTeacher, [
+                          "All Teachers",
+                          ...teachers,
+                        ])}
+                        {select("Subject", subject, setSubject, [
+                          "All Subjects",
+                          "Mathematics",
+                          "Science",
+                          "English",
+                          "History",
+                          "Chemistry",
+                        ])}
+                      </>
                     )}
+                    <div className="table-search">
+                      <Search size={15} />
+                      <input
+                        aria-label={`Search ${page.toLowerCase()}`}
+                        placeholder={
+                          page === "Curriculum"
+                            ? "Search curriculum by name, code..."
+                            : page === "Subject Allocation"
+                              ? "Search by class, subject, or teacher..."
+                              : "Search lesson plan by title, subject..."
+                        }
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                      />
+                    </div>
+                    {page === "Curriculum" &&
+                      select("Applicable level", level, setLevel, [
+                        "All Levels",
+                        ...levels,
+                      ])}
+                    {select("Status", status, setStatus, [
+                      "All Status",
+                      ...(page === "Curriculum"
+                        ? ["Active", "Draft", "Inactive"]
+                        : page === "Subject Allocation"
+                          ? ["Complete", "Pending"]
+                          : ["Approved", "Pending", "Needs Revision"]),
+                    ])}
+                    {page === "Curriculum" && (
+                      <button
+                        className={`secondary filter-button ${filters ? "chosen" : ""}`}
+                        onClick={() => setFilters(!filters)}
+                      >
+                        <SlidersHorizontal size={14} />
+                        More Filters
+                      </button>
+                    )}
+                    <button className="secondary export" onClick={exportCsv}>
+                      <Download size={14} />
+                      Export
+                    </button>
                   </div>
-                  {(page !== "Curriculum" || rows.length > pageSize) && (
-                    <div className="pagination">
-                      <span>
-                        Showing{" "}
-                        {rows.length ? (pageNumber - 1) * pageSize + 1 : 0} to{" "}
-                        {Math.min(pageNumber * pageSize, rows.length)} of{" "}
-                        {rows.length}{" "}
-                        {page === "Lesson Plans"
-                          ? "lesson plans"
-                          : page === "Curriculum"
-                            ? "curricula"
-                            : "classes"}
-                      </span>
-                      <div>
+                </div>
+                {filters && (
+                  <div className="advanced-filters">
+                    <span>
+                      <SlidersHorizontal size={15} /> Effective date
+                    </span>
+                    <label>
+                      From{" "}
+                      <input
+                        aria-label="Effective date from"
+                        type="date"
+                        value={fromDate}
+                        onChange={(e) => setFromDate(e.target.value)}
+                        onInput={(e) => setFromDate(e.currentTarget.value)}
+                      />
+                    </label>
+                    <label>
+                      To{" "}
+                      <input
+                        aria-label="Effective date to"
+                        type="date"
+                        value={toDate}
+                        min={fromDate}
+                        onChange={(e) => setToDate(e.target.value)}
+                        onInput={(e) => setToDate(e.currentTarget.value)}
+                      />
+                    </label>
+                    <button
+                      className="text-button"
+                      onClick={() => {
+                        setQuery("");
+                        setLevel("All Levels");
+                        setStatus("All Status");
+                        setFromDate("");
+                        setToDate("");
+                      }}
+                    >
+                      Clear all filters
+                    </button>
+                    <span className="muted">
+                      Showing {rows.length} matching curricula · {year}
+                    </span>
+                  </div>
+                )}
+                {page !== "Curriculum" && (
+                  <div
+                    className="tabs secondary-tabs"
+                    role="tablist"
+                    aria-label={`${page} views`}
+                  >
+                    {tabs.map((t) => (
+                      <button
+                        key={t}
+                        role="tab"
+                        aria-selected={tab === t}
+                        className={tab === t ? "active" : ""}
+                        onClick={() => setTab(t)}
+                      >
+                        {t}
+                        {t === "Pending Review" && (
+                          <span className="tab-count">
+                            {
+                              lessons.filter((r) => r.status === "Pending")
+                                .length
+                            }
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className={page === "Lesson Plans" ? "lesson-layout" : ""}>
+                  {page === "Lesson Plans" && (
+                    <aside className="calendar-sidebar">
+                      <div className="calendar-heading">
                         <button
-                          aria-label="Previous page"
-                          disabled={pageNumber === 1}
-                          onClick={() => setPageNumber((n) => n - 1)}
+                          aria-label="Previous month"
+                          onClick={() => shiftMonth(-1)}
                         >
                           <ChevronLeft size={14} />
                         </button>
+                        <strong>
+                          {new Date(
+                            calendarYear,
+                            calendarMonth,
+                          ).toLocaleDateString("en-US", {
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </strong>
+                        <button
+                          aria-label="Next month"
+                          onClick={() => shiftMonth(1)}
+                        >
+                          <ChevronRight size={14} />
+                        </button>
+                      </div>
+                      <div className="calendar-grid">
+                        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
+                          <span className="day-label" key={d}>
+                            {d}
+                          </span>
+                        ))}
                         {Array.from(
                           {
-                            length: Math.max(
+                            length: new Date(
+                              calendarYear,
+                              calendarMonth,
                               1,
-                              Math.ceil(rows.length / pageSize),
-                            ),
+                            ).getDay(),
+                          },
+                          (_, i) => (
+                            <span key={`blank${i}`} />
+                          ),
+                        )}
+                        {Array.from(
+                          {
+                            length: new Date(
+                              calendarYear,
+                              calendarMonth + 1,
+                              0,
+                            ).getDate(),
                           },
                           (_, i) => (
                             <button
-                              className={pageNumber === i + 1 ? "current" : ""}
                               key={i}
-                              onClick={() => setPageNumber(i + 1)}
+                              className={`${selectedDay === i + 1 ? "selected" : ""} ${[6, 7, 8].includes(i + 1) && calendarMonth === 9 ? "has-lesson" : ""}`}
+                              onClick={() =>
+                                setSelectedDay(
+                                  selectedDay === i + 1 ? null : i + 1,
+                                )
+                              }
                             >
                               {i + 1}
                             </button>
                           ),
                         )}
-                        <button
-                          aria-label="Next page"
-                          disabled={
-                            pageNumber >= Math.ceil(rows.length / pageSize)
-                          }
-                          onClick={() => setPageNumber((n) => n + 1)}
-                        >
-                          <ChevronRight size={14} />
-                        </button>
                       </div>
+                      {selectedDay && (
+                        <button
+                          className="text-button"
+                          onClick={() => setSelectedDay(null)}
+                        >
+                          Clear date filter
+                        </button>
+                      )}
+                      <h3>Upcoming Lessons</h3>
+                      {lessons.slice(0, 4).map((r, i) => (
+                        <button
+                          className="upcoming"
+                          key={r.id}
+                          onClick={() => open("view", r)}
+                        >
+                          <time>{r.time}</time>
+                          <span className={`mini-icon color-${i}`}>
+                            <BookOpen size={12} />
+                          </span>
+                          <span>
+                            <strong>
+                              {r.className} · {r.subject}
+                            </strong>
+                            <small>{r.name}</small>
+                          </span>
+                        </button>
+                      ))}
+                      <div className="calendar-note">
+                        <CalendarDays size={17} />
+                        <span>
+                          A little planning.
+                          <br />
+                          <strong>A lot of possibility.</strong>
+                        </span>
+                      </div>
+                    </aside>
+                  )}
+                  {page === "Curriculum" && tab === "Learning Areas" ? (
+                    <div className="learning-grid">
+                      {domains.map(([name, count, color]) => (
+                        <article key={name}>
+                          <span style={{ color, background: `${color}15` }}>
+                            <Shapes size={23} />
+                          </span>
+                          <h3>{name}</h3>
+                          <p>{count} subjects in this learning area</p>
+                          <button
+                            className="text-button"
+                            onClick={() => {
+                              setTab("Subject Mapping");
+                              setQuery("");
+                            }}
+                          >
+                            View subject mapping <ArrowUpRight size={14} />
+                          </button>
+                        </article>
+                      ))}
+                    </div>
+                  ) : page === "Curriculum" && tab === "Subject Mapping" ? (
+                    <div className="mapping-view">
+                      <div className="mapping-heading">
+                        <h3>National Curriculum · Subject Mapping</h3>
+                        <span className="muted">Subjects per grade level</span>
+                      </div>
+                      <div className="table-scroll">
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>LEARNING AREA</th>
+                              {[
+                                "KG",
+                                "G1",
+                                "G2",
+                                "G3",
+                                "G4",
+                                "G5",
+                                "G6",
+                                "G7",
+                                "G8",
+                                "G9",
+                                "G10",
+                                "G11",
+                                "G12",
+                              ].map((g) => (
+                                <th key={g}>{g}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {domains.map(([name, , color], i) => (
+                              <tr key={name}>
+                                <td>
+                                  <span
+                                    className="legend-dot"
+                                    style={{ background: color }}
+                                  />
+                                  {name}
+                                </td>
+                                {Array.from({ length: 13 }, (_, j) => (
+                                  <td key={j}>
+                                    {j === 0 && i > 3 ? (
+                                      <span className="muted">—</span>
+                                    ) : (
+                                      <Check
+                                        size={14}
+                                        className="mapping-check"
+                                      />
+                                    )}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ) : page === "Curriculum" && tab === "Versions & History" ? (
+                    <div className="history-view">
+                      <h3>Curriculum version history</h3>
+                      {curricula.map((r) => (
+                        <div className="history-row" key={r.id}>
+                          <span className="history-dot">
+                            <Check size={14} />
+                          </span>
+                          <div>
+                            <strong>{r.name}</strong>
+                            <p>
+                              {r.version} ·{" "}
+                              {r.status === "Draft"
+                                ? "Draft created"
+                                : "Curriculum published"}{" "}
+                              · {fmtDate(r.date)}
+                            </p>
+                          </div>
+                          <Badge status={r.status} />
+                          <button
+                            className="secondary"
+                            onClick={() => open("view", r)}
+                          >
+                            View version
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : page === "Subject Allocation" && tab !== "Class View" ? (
+                    <div className="table-scroll">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>
+                              {tab === "Teacher View" ? "TEACHER" : "SUBJECT"}
+                            </th>
+                            <th>ASSIGNED CLASSES</th>
+                            <th>TOTAL SUBJECTS</th>
+                            <th>STATUS</th>
+                            <th>ACTIONS</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(tab === "Teacher View"
+                            ? teachers
+                            : [
+                                "Mathematics",
+                                "Science",
+                                "English",
+                                "History",
+                                "Chemistry",
+                              ]
+                          ).map((name, i) => {
+                            const assignments =
+                              tab === "Teacher View"
+                                ? rows.filter((r) => r.teacher === name)
+                                : rows.filter((r) => r.subject === name);
+                            return (
+                              <tr key={name}>
+                                <td>{i + 1}</td>
+                                <td>
+                                  <span className="teacher-cell">
+                                    {tab === "Teacher View" && (
+                                      <Avatar name={name} />
+                                    )}
+                                    <strong>{name}</strong>
+                                  </span>
+                                </td>
+                                <td>
+                                  {assignments.map((r) => r.name).join(", ") ||
+                                    "No assignments"}
+                                </td>
+                                <td>
+                                  {assignments.reduce(
+                                    (n, r) => n + r.subjects,
+                                    0,
+                                  )}
+                                </td>
+                                <td>
+                                  <Badge
+                                    status={
+                                      assignments.length
+                                        ? "Complete"
+                                        : "Pending"
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <button
+                                    className="secondary"
+                                    onClick={create}
+                                  >
+                                    <Plus size={13} />
+                                    Allocate
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="table-area">
+                      <div className="table-scroll">
+                        <table
+                          className={
+                            page === "Curriculum" ? "curriculum-table" : ""
+                          }
+                        >
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              {(page === "Curriculum"
+                                ? [
+                                    "CURRICULUM NAME",
+                                    "CODE",
+                                    "DESCRIPTION",
+                                    "APPLICABLE LEVELS",
+                                    "TOTAL SUBJECTS",
+                                    "VERSION",
+                                    "STATUS",
+                                    "EFFECTIVE DATE",
+                                  ]
+                                : page === "Subject Allocation"
+                                  ? [
+                                      "CLASS",
+                                      "GRADE",
+                                      "SUBJECTS ASSIGNED",
+                                      "MAIN TEACHER",
+                                      "ROOM",
+                                      "STATUS",
+                                    ]
+                                  : [
+                                      "DATE",
+                                      "TITLE",
+                                      "SUBJECT",
+                                      "CLASS",
+                                      "TEACHER",
+                                      "STATUS",
+                                    ]
+                              ).map((h) => (
+                                <th key={h}>{h}</th>
+                              ))}
+                              <th className="actions-heading">ACTIONS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {visible.map((r, index) => (
+                              <tr key={r.id}>
+                                <td>
+                                  {(pageNumber - 1) * pageSize + index + 1}
+                                </td>
+                                {page === "Curriculum" ? (
+                                  <>
+                                    <td>
+                                      <button
+                                        className="name-cell"
+                                        onClick={() => open("view", r)}
+                                      >
+                                        <span
+                                          className={`mini-icon color-${index % 5}`}
+                                        >
+                                          <BookOpen size={12} />
+                                        </span>
+                                        <strong>{r.name}</strong>
+                                      </button>
+                                    </td>
+                                    <td>{r.code}</td>
+                                    <td className="description-cell">
+                                      {r.description}
+                                    </td>
+                                    <td>{r.levels}</td>
+                                    <td className="center">{r.subjects}</td>
+                                    <td>{r.version}</td>
+                                    <td>
+                                      <Badge status={r.status} />
+                                    </td>
+                                    <td>{fmtDate(r.date)}</td>
+                                  </>
+                                ) : page === "Subject Allocation" ? (
+                                  <>
+                                    <td>
+                                      <button
+                                        className="name-cell"
+                                        onClick={() => open("view", r)}
+                                      >
+                                        <strong>{r.name}</strong>
+                                      </button>
+                                    </td>
+                                    <td>{r.levels.replace("Grade ", "")}</td>
+                                    <td>{r.subjects} subjects</td>
+                                    <td>
+                                      <span className="teacher-cell">
+                                        <Avatar name={r.teacher} />
+                                        {r.teacher}
+                                      </span>
+                                    </td>
+                                    <td>{r.room}</td>
+                                    <td>
+                                      <Badge status={r.status} />
+                                    </td>
+                                  </>
+                                ) : (
+                                  <>
+                                    <td>{fmtDate(r.date)}</td>
+                                    <td>
+                                      <button
+                                        className="name-cell"
+                                        onClick={() => open("view", r)}
+                                      >
+                                        {r.name}
+                                      </button>
+                                    </td>
+                                    <td>{r.subject}</td>
+                                    <td>{r.className}</td>
+                                    <td>
+                                      <span className="teacher-cell">
+                                        <Avatar name={r.teacher} />
+                                        {r.teacher}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <Badge status={r.status} />
+                                    </td>
+                                  </>
+                                )}
+                                <td>
+                                  <div className="row-actions">
+                                    <button
+                                      aria-label={`View ${r.name}`}
+                                      title="View details"
+                                      onClick={() => open("view", r)}
+                                    >
+                                      <Eye size={14} />
+                                    </button>
+                                    <button
+                                      aria-label={`Edit ${r.name}`}
+                                      title="Edit"
+                                      onClick={() => open("edit", r)}
+                                    >
+                                      <Pencil size={13} />
+                                    </button>
+                                    <div className="popover-anchor">
+                                      <button
+                                        aria-label={`More actions for ${r.name}`}
+                                        title="More actions"
+                                        onClick={() =>
+                                          setActiveMenu(
+                                            activeMenu === r.id ? null : r.id,
+                                          )
+                                        }
+                                      >
+                                        <MoreVertical size={14} />
+                                      </button>
+                                      {activeMenu === r.id && (
+                                        <div className="row-menu">
+                                          <button
+                                            onClick={() => {
+                                              setData((prev) => ({
+                                                ...prev,
+                                                [page]: [
+                                                  ...prev[page],
+                                                  {
+                                                    ...r,
+                                                    id: `${Date.now()}`,
+                                                    name: `${r.name} (copy)`,
+                                                  },
+                                                ],
+                                              }));
+                                              setActiveMenu(null);
+                                              notify("Record duplicated");
+                                            }}
+                                          >
+                                            <Layers size={14} />
+                                            Duplicate
+                                          </button>
+                                          <button
+                                            className="danger"
+                                            onClick={() => open("delete", r)}
+                                          >
+                                            <Trash2 size={14} />
+                                            Delete
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        {!visible.length && (
+                          <div className="empty-state">
+                            <Search size={32} />
+                            <h3>No matching records</h3>
+                            <p>Try another search or clear your filters.</p>
+                            <button
+                              className="secondary"
+                              onClick={() => {
+                                setQuery("");
+                                setLevel("All Levels");
+                                setStatus("All Status");
+                                setTeacher("All Teachers");
+                                setSubject("All Subjects");
+                                setSelectedDay(null);
+                              }}
+                            >
+                              Clear filters
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {(page !== "Curriculum" || rows.length > pageSize) && (
+                        <div className="pagination">
+                          <span>
+                            Showing{" "}
+                            {rows.length ? (pageNumber - 1) * pageSize + 1 : 0}{" "}
+                            to {Math.min(pageNumber * pageSize, rows.length)} of{" "}
+                            {rows.length}{" "}
+                            {page === "Lesson Plans"
+                              ? "lesson plans"
+                              : page === "Curriculum"
+                                ? "curricula"
+                                : "classes"}
+                          </span>
+                          <div>
+                            <button
+                              aria-label="Previous page"
+                              disabled={pageNumber === 1}
+                              onClick={() => setPageNumber((n) => n - 1)}
+                            >
+                              <ChevronLeft size={14} />
+                            </button>
+                            {Array.from(
+                              {
+                                length: Math.max(
+                                  1,
+                                  Math.ceil(rows.length / pageSize),
+                                ),
+                              },
+                              (_, i) => (
+                                <button
+                                  className={
+                                    pageNumber === i + 1 ? "current" : ""
+                                  }
+                                  key={i}
+                                  onClick={() => setPageNumber(i + 1)}
+                                >
+                                  {i + 1}
+                                </button>
+                              ),
+                            )}
+                            <button
+                              aria-label="Next page"
+                              disabled={
+                                pageNumber >= Math.ceil(rows.length / pageSize)
+                              }
+                              onClick={() => setPageNumber((n) => n + 1)}
+                            >
+                              <ChevronRight size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-          </section>
-          {page === "Curriculum" && (
-            <section className="insights-grid">
-              <article className="panel structure-panel">
-                <div className="panel-title">
-                  <h2>Curriculum Structure</h2>
-                  <div className="select-wrap">
-                    <select
-                      aria-label="Curriculum structure"
-                      value={activeCurr?.id || ""}
-                      onChange={(e) => setSelectedCurriculum(e.target.value)}
-                    >
-                      {curricula.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown size={13} />
-                  </div>
-                </div>
-                <div className="tree-heading">
-                  <span />
-                  <strong>Primary Education (Grade 1 - Grade 6)</strong>
-                  <b>{Math.round(totalSubjects / 2)}</b>
-                </div>
-                <div className="structure-tree">
-                  {[
-                    ["Languages", 8],
-                    ["Mathematics", 6],
-                    ["Science", 6],
-                    ["Social Studies", 6],
-                    ["Arts & Physical Education", 8],
-                    ["Life Skills", 14],
-                  ].map(([name, count]) => (
-                    <div key={name}>
-                      <span className="tree-bullet">•</span>
-                      <ClipboardList size={13} />
-                      <span>{name}</span>
-                      <b>{count}</b>
-                    </div>
-                  ))}
-                </div>
-              </article>
-              <article className="panel distribution-panel">
-                <div className="panel-title">
-                  <h2>Subject Distribution</h2>
-                  <span className="muted">By learning area</span>
-                </div>
-                <div className="distribution-content">
-                  <div
-                    className="donut"
-                    style={{
-                      background:
-                        "conic-gradient(#3b88ff 0% 18.8%,#ffa45f 18.8% 27.1%,#13cb94 27.1% 41.7%,#5265f5 41.7% 54.2%,#7c9ac9 54.2% 62.5%,#9b5afa 62.5% 72.9%,#ff4265 72.9% 87.5%,#ff5571 87.5% 100%)",
-                    }}
-                  >
-                    <div>
-                      <strong>{totalSubjects}</strong>
-                      <span>Subjects</span>
-                    </div>
-                  </div>
-                  <div className="chart-legend">
-                    {domains.map(([name, count, color]) => (
-                      <div key={name}>
-                        <span
-                          className="legend-dot"
-                          style={{ background: color }}
-                        />
-                        <span>{name}</span>
-                        <strong>
-                          {Math.round((count / 96) * totalSubjects)}
-                        </strong>
-                        <small>({((count / 96) * 100).toFixed(1)}%)</small>
+              </section>
+              {page === "Curriculum" && (
+                <section className="insights-grid">
+                  <article className="panel structure-panel">
+                    <div className="panel-title">
+                      <h2>Curriculum Structure</h2>
+                      <div className="select-wrap">
+                        <select
+                          aria-label="Curriculum structure"
+                          value={activeCurr?.id || ""}
+                          onChange={(e) =>
+                            setSelectedCurriculum(e.target.value)
+                          }
+                        >
+                          {curricula.map((r) => (
+                            <option key={r.id} value={r.id}>
+                              {r.name}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} />
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </article>
-              <article className="panel coverage-panel">
-                <div className="panel-title">
-                  <h2>Grade Level Coverage</h2>
-                  <span className="badge blue">13 levels</span>
-                </div>
-                <div className="bar-chart">
-                  <div className="axis-labels">
-                    <span>20</span>
-                    <span>15</span>
-                    <span>10</span>
-                    <span>5</span>
-                    <span>0</span>
-                  </div>
-                  <div className="chart-bars">
-                    {[12, 14, 14, 14, 16, 16, 16, 18, 18, 18, 18, 18, 18].map(
-                      (n, i) => (
-                        <div className="bar-column" key={i}>
-                          <div className="bar-track">
-                            <div
-                              className="bar"
-                              style={{ height: `${n * 5}%` }}
-                            >
-                              <strong>{n}</strong>
-                            </div>
-                          </div>
-                          <span>{i === 0 ? "KG" : `G${i}`}</span>
+                    </div>
+                    <div className="tree-heading">
+                      <span />
+                      <strong>Primary Education (Grade 1 - Grade 6)</strong>
+                      <b>{Math.round(totalSubjects / 2)}</b>
+                    </div>
+                    <div className="structure-tree">
+                      {[
+                        ["Languages", 8],
+                        ["Mathematics", 6],
+                        ["Science", 6],
+                        ["Social Studies", 6],
+                        ["Arts & Physical Education", 8],
+                        ["Life Skills", 14],
+                      ].map(([name, count]) => (
+                        <div key={name}>
+                          <span className="tree-bullet">•</span>
+                          <ClipboardList size={13} />
+                          <span>{name}</span>
+                          <b>{count}</b>
                         </div>
-                      ),
-                    )}
-                  </div>
-                </div>
-              </article>
-            </section>
+                      ))}
+                    </div>
+                  </article>
+                  <article className="panel distribution-panel">
+                    <div className="panel-title">
+                      <h2>Subject Distribution</h2>
+                      <span className="muted">By learning area</span>
+                    </div>
+                    <div className="distribution-content">
+                      <div
+                        className="donut"
+                        style={{
+                          background:
+                            "conic-gradient(#3b88ff 0% 18.8%,#ffa45f 18.8% 27.1%,#13cb94 27.1% 41.7%,#5265f5 41.7% 54.2%,#7c9ac9 54.2% 62.5%,#9b5afa 62.5% 72.9%,#ff4265 72.9% 87.5%,#ff5571 87.5% 100%)",
+                        }}
+                      >
+                        <div>
+                          <strong>{totalSubjects}</strong>
+                          <span>Subjects</span>
+                        </div>
+                      </div>
+                      <div className="chart-legend">
+                        {domains.map(([name, count, color]) => (
+                          <div key={name}>
+                            <span
+                              className="legend-dot"
+                              style={{ background: color }}
+                            />
+                            <span>{name}</span>
+                            <strong>
+                              {Math.round((count / 96) * totalSubjects)}
+                            </strong>
+                            <small>({((count / 96) * 100).toFixed(1)}%)</small>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </article>
+                  <article className="panel coverage-panel">
+                    <div className="panel-title">
+                      <h2>Grade Level Coverage</h2>
+                      <span className="badge blue">13 levels</span>
+                    </div>
+                    <div className="bar-chart">
+                      <div className="axis-labels">
+                        <span>20</span>
+                        <span>15</span>
+                        <span>10</span>
+                        <span>5</span>
+                        <span>0</span>
+                      </div>
+                      <div className="chart-bars">
+                        {[
+                          12, 14, 14, 14, 16, 16, 16, 18, 18, 18, 18, 18, 18,
+                        ].map((n, i) => (
+                          <div className="bar-column" key={i}>
+                            <div className="bar-track">
+                              <div
+                                className="bar"
+                                style={{ height: `${n * 5}%` }}
+                              >
+                                <strong>{n}</strong>
+                              </div>
+                            </div>
+                            <span>{i === 0 ? "KG" : `G${i}`}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </article>
+                </section>
+              )}
+              <footer className="page-footer">
+                <span>
+                  <span className="online-dot" />
+                  {saveStatus}
+                </span>
+                <span>
+                  EduManage <span className="footer-dot">·</span> {year}{" "}
+                  <span className="footer-dot">·</span> Academic workspace
+                </span>
+              </footer>
+            </>
           )}
-          <footer className="page-footer">
-            <span>
-              <span className="online-dot" />
-              {saveStatus}
-            </span>
-            <span>
-              EduManage <span className="footer-dot">·</span> {year}{" "}
-              <span className="footer-dot">·</span> Academic workspace
-            </span>
-          </footer>
         </main>
       </div>
       {toast && (

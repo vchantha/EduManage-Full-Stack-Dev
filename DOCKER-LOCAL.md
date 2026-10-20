@@ -34,3 +34,13 @@ Backend workspace tests:
 ```powershell
 docker compose -f compose.yaml -f compose.local.yaml exec -T backend python manage.py test apps.core.test_workspace --noinput
 ```
+
+## School Dashboard
+
+The default page now follows the School Dashboard reference: welcome banner, enrollment and attendance charts, quick actions, recent students, events and fee collection. Add Student, Add Teacher, Create Class, Record Attendance and Add Event save to PostgreSQL. Directories, student editing and report CSV export are available from the sidebar and cards. Academics still opens the existing three academic pages.
+
+School-wide totals and financial/enrollment charts are demonstration data, with the sample school baseline matching the reference. Directories contain example records and records added through quick actions. User login and other unfinished modules remain outside this local demo.
+
+Dashboard API tests: `python manage.py test apps.core.test_dashboard --noinput` inside the backend container.
+
+Banner image: generated with the built-in image tool. The saved prompt and asset notes are in frontend/ASSET-NOTES.md.
