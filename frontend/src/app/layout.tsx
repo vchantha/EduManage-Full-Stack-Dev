@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./dashboard.css";
 import "./planning.css";
+import "./examinations.css";
 export const metadata: Metadata = {
   title: "EduManage · School Dashboard",
   description:

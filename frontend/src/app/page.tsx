@@ -1,5 +1,7 @@
 "use client";
 import Dashboard from "./dashboard";
+import Examinations from "./examinations";
+import type { ExamSection } from "./examination-data";
 import PlanningWorkspace from "./planning-workspace";
 import type { PlanningPage } from "./planning-data";
 
@@ -326,6 +328,9 @@ function Stat({
 }
 
 export default function Home() {
+  const [examOpen, setExamOpen] = useState(false);
+  const [examSection, setExamSection] = useState<ExamSection>("Examinations");
+  const [examTerm, setExamTerm] = useState("Term 1");
   const [page, setPage] = useState<Page>("Curriculum");
   const [showDashboard, setShowDashboard] = useState(true);
   const [planningPage, setPlanningPage] = useState<PlanningPage | null>(null);
@@ -372,7 +377,7 @@ export default function Home() {
   const [pageNumber, setPageNumber] = useState(1);
   const [expanded, setExpanded] = useState(false);
   useEffect(() => {
-    if (showDashboard || planningPage || loaded) return;
+    if (examOpen || showDashboard || planningPage || loaded) return;
     let active = true;
     fetch("/api/workspace")
       .then(async (response) => {
@@ -402,7 +407,7 @@ export default function Home() {
     return () => {
       active = false;
     };
-  }, [showDashboard, planningPage]);
+  }, [examOpen, showDashboard, planningPage]);
   useEffect(() => {
     if (!loaded || !csrfToken) return;
     setSaveStatus("Saving changes...");
@@ -452,6 +457,7 @@ export default function Home() {
   }, []);
   const notify = (text: string) => setToast(text);
   const openSchool = (command = "") => {
+    setExamOpen(false);
     setPlanningPage(null);
     setShowDashboard(true);
     setDashboardCommand(command);
@@ -460,6 +466,7 @@ export default function Home() {
     setQuery("");
   };
   const navigate = (next: Page) => {
+    setExamOpen(false);
     setPlanningPage(null);
     setShowDashboard(false);
     setExpanded(true);
@@ -490,6 +497,7 @@ export default function Home() {
     setToDate("");
   };
   const openPlanning = (next: PlanningPage, command = "") => {
+    setExamOpen(false);
     setPlanningPage(next);
     setPlanningCommand(command);
     setShowDashboard(false);
@@ -512,6 +520,15 @@ export default function Home() {
     else if (["Subjects", "Grade Levels", "Terms & Semesters"].includes(name))
       openPlanning("Academics Overview", name);
     else navigate(name as Page);
+  };
+  const openExams = () => {
+    setExamOpen(true);
+    setShowDashboard(false);
+    setPlanningPage(null);
+    setExpanded(false);
+    setSidebar(false);
+    setQuery("");
+    setExamSection("Examinations");
   };
   const rows = useMemo(
     () =>
@@ -746,7 +763,7 @@ export default function Home() {
   const totalSubjects = activeCurr?.subjects || 0;
   return (
     <div
-      className={`app-shell ${planningPage === "School Overview" ? "blue-overview-shell" : planningPage ? "planning-shell" : showDashboard ? "dashboard-shell" : ""}`}
+      className={`app-shell ${examOpen ? "exam-shell" : planningPage === "School Overview" ? "blue-overview-shell" : planningPage ? "planning-shell" : showDashboard ? "dashboard-shell" : ""}`}
     >
       {sidebar && (
         <button
@@ -769,7 +786,9 @@ export default function Home() {
           </span>
           <span>
             <strong>EduManage</strong>
-            <small>School Management</small>
+            <small>
+              {examOpen ? "School Management System" : "School Management"}
+            </small>
           </span>
         </a>
         <nav aria-label="Main navigation">
@@ -807,7 +826,7 @@ export default function Home() {
             })}
           </div>
           <button
-            className={`academics ${showDashboard || planningPage === "School Overview" ? "" : "active"}`}
+            className={`academics ${examOpen || showDashboard || planningPage === "School Overview" ? "" : "active"}`}
             onClick={() => setExpanded(!expanded)}
           >
             <CalendarDays size={18} />
@@ -831,6 +850,7 @@ export default function Home() {
                 <button
                   key={label}
                   className={
+                    !examOpen &&
                     !showDashboard &&
                     (planningPage
                       ? planningPage === label ||
@@ -844,7 +864,8 @@ export default function Home() {
                 >
                   <span className="nav-plus">+</span>
                   {label}
-                  {!showDashboard &&
+                  {!examOpen &&
+                    !showDashboard &&
                     (planningPage
                       ? planningPage === label ||
                         (planningPage === "Academics Overview" &&
@@ -868,39 +889,76 @@ export default function Home() {
             ].map(([Icon, label]) => {
               const I = Icon as typeof Users;
               return (
-                <button
-                  key={String(label)}
-                  className={
-                    (planningPage === "School Overview" &&
-                      label === "Overview") ||
-                    (showDashboard && !planningPage && label === "Dashboard")
-                      ? planningPage === "School Overview"
-                        ? "p-nav-active"
-                        : "dashboard-nav-active"
-                      : ""
-                  }
-                  onClick={() =>
-                    [
-                      "Reports",
-                      "Events",
+                <div key={String(label)}>
+                  <button
+                    key={String(label)}
+                    className={
+                      examOpen && label === "Examinations"
+                        ? "exam-nav-active"
+                        : (planningPage === "School Overview" &&
+                              label === "Overview") ||
+                            (showDashboard &&
+                              !planningPage &&
+                              label === "Dashboard")
+                          ? planningPage === "School Overview"
+                            ? "p-nav-active"
+                            : "dashboard-nav-active"
+                          : ""
+                    }
+                    onClick={() =>
+                      label === "Examinations"
+                        ? openExams()
+                        : [
+                              "Reports",
+                              "Events",
+                              "Attendance",
+                              "Fees & Finance",
+                              "Settings",
+                            ].includes(String(label))
+                          ? openSchool(String(label))
+                          : notify(`${label} workspace is not available yet`)
+                    }
+                  >
+                    <I size={18} />
+                    <span>{String(label)}</span>
+                    {[
+                      "Examinations",
                       "Attendance",
                       "Fees & Finance",
+                      "Communication",
                       "Settings",
-                    ].includes(String(label))
-                      ? openSchool(String(label))
-                      : notify(`${label} workspace is not available yet`)
-                  }
-                >
-                  <I size={18} />
-                  <span>{String(label)}</span>
-                  {[
-                    "Examinations",
-                    "Attendance",
-                    "Fees & Finance",
-                    "Communication",
-                    "Settings",
-                  ].includes(String(label)) && <ChevronDown size={12} />}
-                </button>
+                    ].includes(String(label)) && <ChevronDown size={12} />}
+                  </button>
+                  {examOpen && label === "Examinations" && (
+                    <div className="ex-subnav">
+                      {(
+                        [
+                          "Grade Management",
+                          "Report Cards",
+                          "Timetable",
+                          "Subjects",
+                        ] as ExamSection[]
+                      ).map((name, i) => (
+                        <button
+                          key={name}
+                          className={examSection === name ? "selected" : ""}
+                          onClick={() => {
+                            setExamSection(name);
+                            setSidebar(false);
+                            setQuery("");
+                          }}
+                        >
+                          {i === 0 ? (
+                            <ClipboardList size={16} />
+                          ) : (
+                            <FileCheck2 size={16} />
+                          )}
+                          <span>{name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -940,7 +998,8 @@ export default function Home() {
             </div>
           )}
         </nav>
-        {(showDashboard ||
+        {(examOpen ||
+          showDashboard ||
           (planningPage && planningPage !== "School Overview")) && (
           <div className="sidebar-promo">
             <strong>
@@ -993,9 +1052,11 @@ export default function Home() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={
-                showDashboard
-                  ? "Search students, teachers, classes, fees..."
-                  : "Search students, teachers, classes, subjects..."
+                examOpen
+                  ? "Search students, teachers, classes, exams..."
+                  : showDashboard
+                    ? "Search students, teachers, classes, fees..."
+                    : "Search students, teachers, classes, subjects..."
               }
             />
             <kbd>⌘ K</kbd>
@@ -1005,6 +1066,15 @@ export default function Home() {
               <small>Academic Year</small>
               {select("Academic year", year, setYear, academicYearOptions)}
             </label>
+            {examOpen && (
+              <label className="year-selector ex-term-selector">
+                <small>Term</small>
+                {select("Examination term", examTerm, setExamTerm, [
+                  "Term 1",
+                  "Term 2",
+                ])}
+              </label>
+            )}
             <div className="language">
               <span>🇺🇸</span>
               {select("Language", "English", () => {}, ["English"])}
@@ -1121,7 +1191,17 @@ export default function Home() {
           </div>
         </header>
         <main>
-          {planningPage ? (
+          {examOpen ? (
+            <Examinations
+              year={year}
+              term={examTerm}
+              section={examSection}
+              onSection={setExamSection}
+              query={query}
+              notify={notify}
+              onCalendar={() => openPlanning("Academic Calendar")}
+            />
+          ) : planningPage ? (
             <PlanningWorkspace
               page={planningPage}
               year={year}

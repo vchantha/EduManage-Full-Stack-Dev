@@ -50,3 +50,13 @@ Banner image: generated with the built-in image tool. The saved prompt and asset
 Overview, Academic Years, Academics Overview, Syllabus & Progress, and Academic Calendar now share the navigation. Planning records are stored in the planning workspace in PostgreSQL. Academic year, term, topic, subject, material, and event forms save through the CSRF-protected planning API. Calendar supports month, week, list, type filters, and event editing. Sample school figures and schedules are demonstration data; the current date is 20 October 2026. The original orange Dashboard and curriculum, allocation, and lesson pages remain accessible.
 
 Validation: production Next.js build, Django system and migration checks, Ruff, 14 backend tests, and desktop browser review of the five new pages.
+
+## Examinations
+
+Open Examinations in the sidebar for the new reference layout, year and term selectors, exam summaries, performance charts, recent and scheduled examinations, class performance, top students, and quick actions. The submenu opens Grade Management, Report Cards, Timetable, and Subjects.
+
+Create or edit exams, enter a student mark for an exam and subject, configure pass marks, export CSV reports, or open the academic calendar. Exams and marks persist in the examinations workspace in PostgreSQL through a CSRF-protected API. Re-entering the same student ID, exam, and subject updates that mark. Deleting an exam requires a second confirmation and also removes its marks.
+
+Reference data is a local demonstration, with historical 2025-2026 exam dates. Past scheduled dates show "Past date" instead of an inaccurate countdown. Reference summary counts may exceed the five example individual marks. Once marks are entered or edited for an exam, that exam's summary is recalculated from its recorded marks. Pass rate cards average the graded exam pass rates; class enrollment counts each class once. Months without submitted exams are left empty in the trend chart.
+
+Validation: production frontend build, Ruff, Django system and migration checks, and 18 passing backend tests, including CSRF, mark bounds, invalid dates, class/exam references, duplicate marks, and persistence.
