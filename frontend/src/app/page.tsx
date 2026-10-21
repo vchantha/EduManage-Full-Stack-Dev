@@ -1,6 +1,7 @@
 "use client";
 import Dashboard from "./dashboard";
 import Examinations from "./examinations";
+import LibraryWorkspace from "./library";
 import type { ExamSection } from "./examination-data";
 import PlanningWorkspace from "./planning-workspace";
 import type { PlanningPage } from "./planning-data";
@@ -328,6 +329,7 @@ function Stat({
 }
 
 export default function Home() {
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [examOpen, setExamOpen] = useState(false);
   const [examSection, setExamSection] = useState<ExamSection>("Examinations");
   const [examTerm, setExamTerm] = useState("Term 1");
@@ -377,7 +379,8 @@ export default function Home() {
   const [pageNumber, setPageNumber] = useState(1);
   const [expanded, setExpanded] = useState(false);
   useEffect(() => {
-    if (examOpen || showDashboard || planningPage || loaded) return;
+    if (libraryOpen || examOpen || showDashboard || planningPage || loaded)
+      return;
     let active = true;
     fetch("/api/workspace")
       .then(async (response) => {
@@ -407,7 +410,7 @@ export default function Home() {
     return () => {
       active = false;
     };
-  }, [examOpen, showDashboard, planningPage]);
+  }, [libraryOpen, examOpen, showDashboard, planningPage]);
   useEffect(() => {
     if (!loaded || !csrfToken) return;
     setSaveStatus("Saving changes...");
@@ -457,6 +460,7 @@ export default function Home() {
   }, []);
   const notify = (text: string) => setToast(text);
   const openSchool = (command = "") => {
+    setLibraryOpen(false);
     setExamOpen(false);
     setPlanningPage(null);
     setShowDashboard(true);
@@ -466,6 +470,7 @@ export default function Home() {
     setQuery("");
   };
   const navigate = (next: Page) => {
+    setLibraryOpen(false);
     setExamOpen(false);
     setPlanningPage(null);
     setShowDashboard(false);
@@ -497,6 +502,7 @@ export default function Home() {
     setToDate("");
   };
   const openPlanning = (next: PlanningPage, command = "") => {
+    setLibraryOpen(false);
     setExamOpen(false);
     setPlanningPage(next);
     setPlanningCommand(command);
@@ -522,6 +528,7 @@ export default function Home() {
     else navigate(name as Page);
   };
   const openExams = () => {
+    setLibraryOpen(false);
     setExamOpen(true);
     setShowDashboard(false);
     setPlanningPage(null);
@@ -529,6 +536,15 @@ export default function Home() {
     setSidebar(false);
     setQuery("");
     setExamSection("Examinations");
+  };
+  const openLibrary = () => {
+    setLibraryOpen(true);
+    setExamOpen(false);
+    setShowDashboard(false);
+    setPlanningPage(null);
+    setExpanded(false);
+    setSidebar(false);
+    setQuery("");
   };
   const rows = useMemo(
     () =>
@@ -763,7 +779,7 @@ export default function Home() {
   const totalSubjects = activeCurr?.subjects || 0;
   return (
     <div
-      className={`app-shell ${examOpen ? "exam-shell" : planningPage === "School Overview" ? "blue-overview-shell" : planningPage ? "planning-shell" : showDashboard ? "dashboard-shell" : ""}`}
+      className={`app-shell ${libraryOpen ? "exam-shell library-shell" : examOpen ? "exam-shell" : planningPage === "School Overview" ? "blue-overview-shell" : planningPage ? "planning-shell" : showDashboard ? "dashboard-shell" : ""}`}
     >
       {sidebar && (
         <button
@@ -787,7 +803,9 @@ export default function Home() {
           <span>
             <strong>EduManage</strong>
             <small>
-              {examOpen ? "School Management System" : "School Management"}
+              {examOpen || libraryOpen
+                ? "School Management System"
+                : "School Management"}
             </small>
           </span>
         </a>
@@ -826,7 +844,7 @@ export default function Home() {
             })}
           </div>
           <button
-            className={`academics ${examOpen || showDashboard || planningPage === "School Overview" ? "" : "active"}`}
+            className={`academics ${libraryOpen || examOpen || showDashboard || planningPage === "School Overview" ? "" : "active"}`}
             onClick={() => setExpanded(!expanded)}
           >
             <CalendarDays size={18} />
@@ -850,6 +868,7 @@ export default function Home() {
                 <button
                   key={label}
                   className={
+                    !libraryOpen &&
                     !examOpen &&
                     !showDashboard &&
                     (planningPage
@@ -864,7 +883,8 @@ export default function Home() {
                 >
                   <span className="nav-plus">+</span>
                   {label}
-                  {!examOpen &&
+                  {!libraryOpen &&
+                    !examOpen &&
                     !showDashboard &&
                     (planningPage
                       ? planningPage === label ||
@@ -893,30 +913,34 @@ export default function Home() {
                   <button
                     key={String(label)}
                     className={
-                      examOpen && label === "Examinations"
-                        ? "exam-nav-active"
-                        : (planningPage === "School Overview" &&
-                              label === "Overview") ||
-                            (showDashboard &&
-                              !planningPage &&
-                              label === "Dashboard")
-                          ? planningPage === "School Overview"
-                            ? "p-nav-active"
-                            : "dashboard-nav-active"
-                          : ""
+                      libraryOpen && label === "Library"
+                        ? "lib-nav-active"
+                        : examOpen && label === "Examinations"
+                          ? "exam-nav-active"
+                          : (planningPage === "School Overview" &&
+                                label === "Overview") ||
+                              (showDashboard &&
+                                !planningPage &&
+                                label === "Dashboard")
+                            ? planningPage === "School Overview"
+                              ? "p-nav-active"
+                              : "dashboard-nav-active"
+                            : ""
                     }
                     onClick={() =>
-                      label === "Examinations"
-                        ? openExams()
-                        : [
-                              "Reports",
-                              "Events",
-                              "Attendance",
-                              "Fees & Finance",
-                              "Settings",
-                            ].includes(String(label))
-                          ? openSchool(String(label))
-                          : notify(`${label} workspace is not available yet`)
+                      label === "Library"
+                        ? openLibrary()
+                        : label === "Examinations"
+                          ? openExams()
+                          : [
+                                "Reports",
+                                "Events",
+                                "Attendance",
+                                "Fees & Finance",
+                                "Settings",
+                              ].includes(String(label))
+                            ? openSchool(String(label))
+                            : notify(`${label} workspace is not available yet`)
                     }
                   >
                     <I size={18} />
@@ -998,14 +1022,21 @@ export default function Home() {
             </div>
           )}
         </nav>
-        {(examOpen ||
+        {(libraryOpen ||
+          examOpen ||
           showDashboard ||
           (planningPage && planningPage !== "School Overview")) && (
           <div className="sidebar-promo">
             <strong>
-              Bright Future
-              <br />
-              Starts Here
+              {libraryOpen ? (
+                "Bright Future School"
+              ) : (
+                <>
+                  Bright Future
+                  <br />
+                  Starts Here
+                </>
+              )}
             </strong>
             <small>Education · Growth · Success</small>
           </div>
@@ -1048,15 +1079,19 @@ export default function Home() {
           <div className="global-search">
             <Search size={19} />
             <input
-              aria-label="Search academic workspace"
+              aria-label={
+                libraryOpen ? "Search library" : "Search academic workspace"
+              }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={
-                examOpen
-                  ? "Search students, teachers, classes, exams..."
-                  : showDashboard
-                    ? "Search students, teachers, classes, fees..."
-                    : "Search students, teachers, classes, subjects..."
+                libraryOpen
+                  ? "Search books, students, authors or ISBN..."
+                  : examOpen
+                    ? "Search students, teachers, classes, exams..."
+                    : showDashboard
+                      ? "Search students, teachers, classes, fees..."
+                      : "Search students, teachers, classes, subjects..."
               }
             />
             <kbd>⌘ K</kbd>
@@ -1191,7 +1226,9 @@ export default function Home() {
           </div>
         </header>
         <main>
-          {examOpen ? (
+          {libraryOpen ? (
+            <LibraryWorkspace year={year} query={query} notify={notify} />
+          ) : examOpen ? (
             <Examinations
               year={year}
               term={examTerm}

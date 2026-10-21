@@ -4,6 +4,10 @@ const config: NextConfig = {
   async rewrites() {
     return [
       {
+        source: "/api/library",
+        destination: "http://backend:8000/api/v1/library/",
+      },
+      {
         source: "/api/examinations",
         destination: "http://backend:8000/api/v1/examinations/",
       },
