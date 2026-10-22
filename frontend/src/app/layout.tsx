@@ -4,6 +4,7 @@ import "./dashboard.css";
 import "./planning.css";
 import "./examinations.css";
 import "./library.css";
+import "./finance.css";
 export const metadata: Metadata = {
   title: "EduManage · School Dashboard",
   description:
