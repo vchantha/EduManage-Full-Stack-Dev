@@ -7,8 +7,10 @@ from .examination_views import examinations
 from .library_views import library
 from .finance_views import finance
 from .settings_views import school_settings
+from .attendance_views import attendance
 
 urlpatterns = [
+    path("attendance/", attendance, name="attendance"),
     path("settings/", school_settings, name="school-settings"),
     path("finance/", finance, name="finance"),
     path("library/", library, name="library"),

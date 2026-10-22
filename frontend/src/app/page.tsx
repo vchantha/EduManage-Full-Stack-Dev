@@ -3,6 +3,7 @@ import Dashboard from "./dashboard";
 import Examinations from "./examinations";
 import LibraryWorkspace from "./library";
 import FinanceWorkspace from "./finance";
+import AttendanceWorkspace from "./attendance";
 import SchoolSettings, {
   settingsSections,
   type SettingsSection,
@@ -335,6 +336,7 @@ function Stat({
 }
 
 export default function Home() {
+  const [attendanceOpen, setAttendanceOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSection, setSettingsSection] =
     useState<SettingsSection>("General");
@@ -390,6 +392,7 @@ export default function Home() {
   const [expanded, setExpanded] = useState(false);
   useEffect(() => {
     if (
+      attendanceOpen ||
       settingsOpen ||
       financeOpen ||
       libraryOpen ||
@@ -429,6 +432,7 @@ export default function Home() {
       active = false;
     };
   }, [
+    attendanceOpen,
     settingsOpen,
     financeOpen,
     libraryOpen,
@@ -485,6 +489,14 @@ export default function Home() {
   }, []);
   const notify = (text: string) => setToast(text);
   const openSchool = (command = "") => {
+    if (
+      command === "Attendance" ||
+      command === "Record Attendance" ||
+      command === "Take Attendance"
+    ) {
+      openAttendance();
+      return;
+    }
     if (command === "Settings") {
       openSettings();
       return;
@@ -493,6 +505,7 @@ export default function Home() {
       openFinance();
       return;
     }
+    setAttendanceOpen(false);
     setSettingsOpen(false);
     setFinanceOpen(false);
     setLibraryOpen(false);
@@ -505,6 +518,7 @@ export default function Home() {
     setQuery("");
   };
   const navigate = (next: Page) => {
+    setAttendanceOpen(false);
     setSettingsOpen(false);
     setFinanceOpen(false);
     setLibraryOpen(false);
@@ -539,6 +553,7 @@ export default function Home() {
     setToDate("");
   };
   const openPlanning = (next: PlanningPage, command = "") => {
+    setAttendanceOpen(false);
     setSettingsOpen(false);
     setFinanceOpen(false);
     setLibraryOpen(false);
@@ -567,6 +582,7 @@ export default function Home() {
     else navigate(name as Page);
   };
   const openExams = () => {
+    setAttendanceOpen(false);
     setSettingsOpen(false);
     setFinanceOpen(false);
     setLibraryOpen(false);
@@ -579,6 +595,7 @@ export default function Home() {
     setExamSection("Examinations");
   };
   const openLibrary = () => {
+    setAttendanceOpen(false);
     setSettingsOpen(false);
     setFinanceOpen(false);
     setLibraryOpen(true);
@@ -590,6 +607,7 @@ export default function Home() {
     setQuery("");
   };
   const openFinance = () => {
+    setAttendanceOpen(false);
     setSettingsOpen(false);
     setFinanceOpen(true);
     setLibraryOpen(false);
@@ -601,8 +619,21 @@ export default function Home() {
     setQuery("");
   };
   const openSettings = () => {
+    setAttendanceOpen(false);
     setSettingsOpen(true);
     setSettingsSection("General");
+    setFinanceOpen(false);
+    setLibraryOpen(false);
+    setExamOpen(false);
+    setShowDashboard(false);
+    setPlanningPage(null);
+    setExpanded(false);
+    setSidebar(false);
+    setQuery("");
+  };
+  const openAttendance = () => {
+    setAttendanceOpen(true);
+    setSettingsOpen(false);
     setFinanceOpen(false);
     setLibraryOpen(false);
     setExamOpen(false);
@@ -845,7 +876,7 @@ export default function Home() {
   const totalSubjects = activeCurr?.subjects || 0;
   return (
     <div
-      className={`app-shell ${settingsOpen ? "exam-shell settings-shell" : financeOpen ? "exam-shell finance-shell" : libraryOpen ? "exam-shell library-shell" : examOpen ? "exam-shell" : planningPage === "School Overview" ? "blue-overview-shell" : planningPage ? "planning-shell" : showDashboard ? "dashboard-shell" : ""}`}
+      className={`app-shell ${attendanceOpen ? "exam-shell attendance-shell" : settingsOpen ? "exam-shell settings-shell" : financeOpen ? "exam-shell finance-shell" : libraryOpen ? "exam-shell library-shell" : examOpen ? "exam-shell" : planningPage === "School Overview" ? "blue-overview-shell" : planningPage ? "planning-shell" : showDashboard ? "dashboard-shell" : ""}`}
     >
       {sidebar && (
         <button
@@ -869,7 +900,11 @@ export default function Home() {
           <span>
             <strong>EduManage</strong>
             <small>
-              {settingsOpen || financeOpen || examOpen || libraryOpen
+              {attendanceOpen ||
+              settingsOpen ||
+              financeOpen ||
+              examOpen ||
+              libraryOpen
                 ? "School Management System"
                 : "School Management"}
             </small>
@@ -910,7 +945,7 @@ export default function Home() {
             })}
           </div>
           <button
-            className={`academics ${settingsOpen || financeOpen || libraryOpen || examOpen || showDashboard || planningPage === "School Overview" ? "" : "active"}`}
+            className={`academics ${attendanceOpen || settingsOpen || financeOpen || libraryOpen || examOpen || showDashboard || planningPage === "School Overview" ? "" : "active"}`}
             onClick={() => setExpanded(!expanded)}
           >
             <CalendarDays size={18} />
@@ -934,6 +969,7 @@ export default function Home() {
                 <button
                   key={label}
                   className={
+                    !attendanceOpen &&
                     !settingsOpen &&
                     !financeOpen &&
                     !libraryOpen &&
@@ -951,7 +987,8 @@ export default function Home() {
                 >
                   <span className="nav-plus">+</span>
                   {label}
-                  {!settingsOpen &&
+                  {!attendanceOpen &&
+                    !settingsOpen &&
                     !financeOpen &&
                     !libraryOpen &&
                     !examOpen &&
@@ -983,44 +1020,48 @@ export default function Home() {
                   <button
                     key={String(label)}
                     className={
-                      settingsOpen && label === "Settings"
-                        ? "settings-nav-active"
-                        : financeOpen && label === "Fees & Finance"
-                          ? "finance-nav-active"
-                          : libraryOpen && label === "Library"
-                            ? "lib-nav-active"
-                            : examOpen && label === "Examinations"
-                              ? "exam-nav-active"
-                              : (planningPage === "School Overview" &&
-                                    label === "Overview") ||
-                                  (showDashboard &&
-                                    !planningPage &&
-                                    label === "Dashboard")
-                                ? planningPage === "School Overview"
-                                  ? "p-nav-active"
-                                  : "dashboard-nav-active"
-                                : ""
+                      attendanceOpen && label === "Attendance"
+                        ? "attendance-nav-active"
+                        : settingsOpen && label === "Settings"
+                          ? "settings-nav-active"
+                          : financeOpen && label === "Fees & Finance"
+                            ? "finance-nav-active"
+                            : libraryOpen && label === "Library"
+                              ? "lib-nav-active"
+                              : examOpen && label === "Examinations"
+                                ? "exam-nav-active"
+                                : (planningPage === "School Overview" &&
+                                      label === "Overview") ||
+                                    (showDashboard &&
+                                      !planningPage &&
+                                      label === "Dashboard")
+                                  ? planningPage === "School Overview"
+                                    ? "p-nav-active"
+                                    : "dashboard-nav-active"
+                                  : ""
                     }
                     onClick={() =>
-                      label === "Settings"
-                        ? openSettings()
-                        : label === "Fees & Finance"
-                          ? openFinance()
-                          : label === "Library"
-                            ? openLibrary()
-                            : label === "Examinations"
-                              ? openExams()
-                              : [
-                                    "Reports",
-                                    "Events",
-                                    "Attendance",
-                                    "Fees & Finance",
-                                    "Settings",
-                                  ].includes(String(label))
-                                ? openSchool(String(label))
-                                : notify(
-                                    `${label} workspace is not available yet`,
-                                  )
+                      label === "Attendance"
+                        ? openAttendance()
+                        : label === "Settings"
+                          ? openSettings()
+                          : label === "Fees & Finance"
+                            ? openFinance()
+                            : label === "Library"
+                              ? openLibrary()
+                              : label === "Examinations"
+                                ? openExams()
+                                : [
+                                      "Reports",
+                                      "Events",
+                                      "Attendance",
+                                      "Fees & Finance",
+                                      "Settings",
+                                    ].includes(String(label))
+                                  ? openSchool(String(label))
+                                  : notify(
+                                      `${label} workspace is not available yet`,
+                                    )
                     }
                   >
                     <I size={18} />
@@ -1136,14 +1177,15 @@ export default function Home() {
             </div>
           )}
         </nav>
-        {(financeOpen ||
+        {(attendanceOpen ||
+          financeOpen ||
           libraryOpen ||
           examOpen ||
           showDashboard ||
           (planningPage && planningPage !== "School Overview")) && (
           <div className="sidebar-promo">
             <strong>
-              {financeOpen || libraryOpen ? (
+              {attendanceOpen || financeOpen || libraryOpen ? (
                 "Bright Future School"
               ) : (
                 <>
@@ -1195,28 +1237,32 @@ export default function Home() {
             <Search size={19} />
             <input
               aria-label={
-                settingsOpen
-                  ? "Search settings"
-                  : financeOpen
-                    ? "Search finance"
-                    : libraryOpen
-                      ? "Search library"
-                      : "Search academic workspace"
+                attendanceOpen
+                  ? "Search attendance"
+                  : settingsOpen
+                    ? "Search settings"
+                    : financeOpen
+                      ? "Search finance"
+                      : libraryOpen
+                        ? "Search library"
+                        : "Search academic workspace"
               }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={
-                settingsOpen
-                  ? "Search settings, users, roles, or configuration..."
-                  : financeOpen
-                    ? "Search students, invoices, payments, or receipts..."
-                    : libraryOpen
-                      ? "Search books, students, authors or ISBN..."
-                      : examOpen
-                        ? "Search students, teachers, classes, exams..."
-                        : showDashboard
-                          ? "Search students, teachers, classes, fees..."
-                          : "Search students, teachers, classes, subjects..."
+                attendanceOpen
+                  ? "Search students, classes, or attendance records..."
+                  : settingsOpen
+                    ? "Search settings, users, roles, or configuration..."
+                    : financeOpen
+                      ? "Search students, invoices, payments, or receipts..."
+                      : libraryOpen
+                        ? "Search books, students, authors or ISBN..."
+                        : examOpen
+                          ? "Search students, teachers, classes, exams..."
+                          : showDashboard
+                            ? "Search students, teachers, classes, fees..."
+                            : "Search students, teachers, classes, subjects..."
               }
             />
             <kbd>⌘ K</kbd>
@@ -1226,15 +1272,17 @@ export default function Home() {
               <small>Academic Year</small>
               {select("Academic year", year, setYear, academicYearOptions)}
             </label>
-            {(settingsOpen || financeOpen || examOpen) && (
+            {(attendanceOpen || settingsOpen || financeOpen || examOpen) && (
               <label className="year-selector ex-term-selector">
                 <small>Term</small>
                 {select(
-                  settingsOpen
-                    ? "Settings term"
-                    : financeOpen
-                      ? "Finance term"
-                      : "Examination term",
+                  attendanceOpen
+                    ? "Attendance term"
+                    : settingsOpen
+                      ? "Settings term"
+                      : financeOpen
+                        ? "Finance term"
+                        : "Examination term",
                   examTerm,
                   setExamTerm,
                   ["Term 1", "Term 2"],
@@ -1357,7 +1405,14 @@ export default function Home() {
           </div>
         </header>
         <main>
-          {settingsOpen ? (
+          {attendanceOpen ? (
+            <AttendanceWorkspace
+              year={year}
+              term={examTerm}
+              query={query}
+              notify={notify}
+            />
+          ) : settingsOpen ? (
             <SchoolSettings
               year={year}
               term={examTerm}
