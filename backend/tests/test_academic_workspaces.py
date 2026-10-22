@@ -1,4 +1,5 @@
 from apps.core.test_finance import FinanceTests
+from apps.core.test_settings import SettingsTests
 from apps.core.test_library import LibraryTests
 from apps.core.test_examinations import ExaminationTests
 from apps.core.test_dashboard import DashboardTests
@@ -12,4 +13,5 @@ __all__ = [
     "ExaminationTests",
     "LibraryTests",
     "FinanceTests",
+    "SettingsTests",
 ]

@@ -56,6 +56,7 @@ DATABASES = {
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_TZ = True
+DATA_UPLOAD_MAX_MEMORY_SIZE = 3_000_000  # Allows a 2 MB logo after JSON/base64 encoding.
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
