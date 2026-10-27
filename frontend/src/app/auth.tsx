@@ -1,5 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { ProviderMark } from "./auth-preview";
 import {
   GraduationCap,
   BookOpen,
@@ -354,15 +355,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
               <span />
             </div>
             <button type="button" className="au-sso" disabled>
-              <b className="au-google">G</b>Continue with Google
+              <ProviderMark provider="Google" />Continue with Google
             </button>
             <button type="button" className="au-sso" disabled>
-              <span className="au-microsoft">
-                <i />
-                <i />
-                <i />
-                <i />
-              </span>
+              <ProviderMark provider="Microsoft" />
               Continue with Microsoft
             </button>
             <p className="au-provider-note">Single sign-on is not connected.</p>

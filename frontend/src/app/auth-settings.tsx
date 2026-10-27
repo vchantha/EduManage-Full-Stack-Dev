@@ -12,6 +12,7 @@ import {
   Check,
 } from "lucide-react";
 import { AuthPolicy, useSchoolAuth } from "./auth";
+import { LoginPreview, ProviderMark } from "./auth-preview";
 type ActiveSession = {
   id: number;
   created: string;
@@ -66,6 +67,7 @@ export default function AuthSecuritySettings({
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
+    [provider, setProvider] = useState<"Google" | "Microsoft" | null>(null),
     [list, setList] = useState(mode === "sessions"),
     [revoke, setRevoke] = useState<ActiveSession | null>(null);
   const csrf = useRef("");
@@ -97,6 +99,20 @@ export default function AuthSecuritySettings({
     };
   }, []);
   useEffect(() => setList(mode === "sessions"), [mode]);
+  useEffect(() => {
+    if (!provider) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setProvider(null);
+    };
+    window.addEventListener("keydown", close);
+    const previous = document.activeElement as HTMLElement | null;
+    const timer = setTimeout(() => document.getElementById("au-provider-close")?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("keydown", close);
+      previous?.focus();
+    };
+  }, [provider]);
   if (!draft || !saved)
     return (
       <p className="au-settings-loading">
@@ -220,7 +236,7 @@ export default function AuthSecuritySettings({
           onClick={save}
         >
           <Save size={16} />
-          {busy ? "Saving…" : "Save Login Settings"}
+          {busy ? "Saving…" : "Save Changes"}
         </button>
       </div>
       {error && (
@@ -229,7 +245,8 @@ export default function AuthSecuritySettings({
         </p>
       )}
       {mode === "login" && (
-        <div className="au-settings-columns">
+        <div className="au-settings-columns au-login-layout">
+          <div className="au-setting-stack au-policy-stack">
           <section className="au-setting-panel">
             <header>
               <LockKeyhole size={29} />
@@ -247,20 +264,17 @@ export default function AuthSecuritySettings({
                 onChange={(v) => change("passwordLogin", v)}
                 disabled
               />
-              <Switch
-                title="Enable Google Login (SSO)"
-                note="Google sign-in has not been connected."
-                value={false}
-                onChange={() => {}}
-                disabled
-              />
-              <Switch
-                title="Enable Microsoft Login (SSO)"
-                note="Microsoft sign-in has not been connected."
-                value={false}
-                onChange={() => {}}
-                disabled
-              />
+              <h3 className="au-provider-heading">Single sign-on</h3>
+              <div className="au-provider-list">
+                {(["Google", "Microsoft"] as const).map(name => (
+                  <div key={name} className="au-provider-row">
+                    <ProviderMark provider={name} />
+                    <div><strong>{name}</strong><p>Allow school accounts to sign in with {name}</p></div>
+                    <span className="au-provider-status">Not connected</span>
+                    <button type="button" className="au-outline" aria-label={`Configure ${name} sign-in`} onClick={() => setProvider(name)}>Configure</button>
+                  </div>
+                ))}
+              </div>
               <Switch
                 icon={Clock}
                 title="Enable Remember Me"
@@ -315,7 +329,6 @@ export default function AuthSecuritySettings({
               </p>
             </div>
           </section>
-          <div className="au-setting-stack">
             <section className="au-setting-panel">
               <header>
                 <LogOut size={29} />
@@ -382,6 +395,9 @@ export default function AuthSecuritySettings({
                 />
               </div>
             </section>
+          </div>
+          <div className="au-setting-stack au-preview-stack">
+            <LoginPreview policy={policy} />
             <section className="au-setting-panel">
               <header>
                 <Clock size={26} />
@@ -422,6 +438,20 @@ export default function AuthSecuritySettings({
               </div>
             </section>
           </div>
+        </div>
+      )}
+      {provider && (
+        <div className="au-overlay">
+          <section className="au-dialog au-provider-dialog" role="dialog" aria-modal="true" aria-labelledby="au-provider-title" onKeyDown={event => {
+            if (event.key === "Tab") { event.preventDefault(); document.getElementById("au-provider-close")?.focus(); }
+          }}>
+            <ProviderMark provider={provider} />
+            <h2 id="au-provider-title">Connect {provider}</h2>
+            <p>Continue with {provider} is not connected yet. Your school administrator needs to register the school application with {provider} and configure sign-in on the server.</p>
+            <div className="au-provider-steps"><strong>Setup requirements</strong><ol><li>A school-managed {provider} application.</li><li>Approved redirect address and account access rules.</li><li>Server-side credentials and a verified sign-in connection.</li></ol></div>
+            <p>Keep provider secrets on the server. The preview does not enable sign-in or change access to your school.</p>
+            <button id="au-provider-close" type="button" className="au-primary" onClick={() => setProvider(null)}>Back to Settings</button>
+          </section>
         </div>
       )}
       {(list || mode === "sessions") && (
