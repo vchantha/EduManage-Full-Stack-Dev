@@ -1,3 +1,4 @@
+from apps.core.test_auth import AuthTests
 from apps.core.test_finance import FinanceTests
 from apps.core.test_settings import SettingsTests
 from apps.core.test_attendance import AttendanceTests
@@ -16,4 +17,5 @@ __all__ = [
     "FinanceTests",
     "SettingsTests",
     "AttendanceTests",
+    "AuthTests",
 ]

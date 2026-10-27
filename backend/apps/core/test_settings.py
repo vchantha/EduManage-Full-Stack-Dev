@@ -1,3 +1,4 @@
+from django.test import override_settings
 import base64
 import copy
 import json
@@ -8,6 +9,7 @@ from .settings_views import DEFAULTS
 from .models import AcademicWorkspace
 
 
+@override_settings(EDUMANAGE_AUTH_REQUIRED=False)
 class SettingsTests(TestCase):
     endpoint = "/api/v1/settings/"
 

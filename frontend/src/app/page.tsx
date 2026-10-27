@@ -1,4 +1,5 @@
 "use client";
+import { AuthGate, useSchoolAuth } from "./auth";
 import Dashboard from "./dashboard";
 import Examinations from "./examinations";
 import LibraryWorkspace from "./library";
@@ -335,7 +336,8 @@ function Stat({
   );
 }
 
-export default function Home() {
+function SchoolApp() {
+  const auth = useSchoolAuth();
   const [attendanceOpen, setAttendanceOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSection, setSettingsSection] =
@@ -1308,6 +1310,17 @@ export default function Home() {
             >
               <Maximize size={18} />
             </button>
+            {auth.policy?.showLogoutHeader && (
+              <button
+                type="button"
+                className="au-header-logout"
+                aria-label="Logout"
+                onClick={auth.requestLogout}
+              >
+                <LogOut size={18} />
+                <span>Logout</span>
+              </button>
+            )}
             <div className="popover-anchor">
               <button
                 className="icon-button bell"
@@ -1357,36 +1370,21 @@ export default function Home() {
                   setNotifications(false);
                 }}
               >
-                <Avatar
-                  name={
-                    planningPage === "School Overview"
-                      ? "Admin User"
-                      : "John Doe"
-                  }
-                  large
-                />
+                <Avatar name={auth.user?.name || "Administrator"} large />
                 <span>
-                  <strong>
-                    {planningPage === "School Overview"
-                      ? "Admin User"
-                      : "John Doe"}
-                  </strong>
-                  <small>
-                    {planningPage === "School Overview"
-                      ? "System Administrator"
-                      : "Administrator"}
-                  </small>
+                  <strong>{auth.user?.name || "Administrator"}</strong>
+                  <small>{auth.user?.role || "School Administrator"}</small>
                 </span>
                 <ChevronDown size={14} />
               </button>
               {profile && (
                 <div className="popover profile-panel">
-                  <strong>
-                    {planningPage === "School Overview"
-                      ? "Admin User"
-                      : "John Doe"}
-                  </strong>
+                  <strong>{auth.user?.name || "Administrator"}</strong>
                   <p>School Administrator</p>
+                  <button onClick={auth.requestLogout}>
+                    <LogOut size={16} />
+                    Logout
+                  </button>
                   <button
                     onClick={() => {
                       openPlanning("School Overview");
@@ -2820,5 +2818,13 @@ export default function Home() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <AuthGate>
+      <SchoolApp />
+    </AuthGate>
   );
 }

@@ -1,3 +1,4 @@
+from django.test import override_settings
 import copy
 import json
 
@@ -6,6 +7,7 @@ from django.test import Client, TestCase
 from .attendance_views import initial_attendance
 
 
+@override_settings(EDUMANAGE_AUTH_REQUIRED=False)
 class AttendanceTests(TestCase):
     endpoint = "/api/v1/attendance/"
 

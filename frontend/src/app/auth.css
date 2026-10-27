@@ -1,0 +1,932 @@
+.au-loading {
+  min-height: 100vh;
+  background: linear-gradient(130deg, #082744, #23589b);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 25px;
+}
+.au-brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: #ff921a;
+}
+.au-brand strong {
+  display: block;
+  color: white;
+  font-size: 28px;
+  letter-spacing: -0.7px;
+}
+.au-brand small {
+  display: block;
+  color: #f0f7ff;
+  font-size: 13px;
+  margin-top: 3px;
+}
+.au-login {
+  min-height: 100vh;
+  position: relative;
+  background:
+    linear-gradient(105deg, #052448df 0%, #1766ad69 45%, #3b85c322 80%),
+    url("/school-campus.png") center 64% / cover;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 55px 6%;
+  gap: 6%;
+  align-items: center;
+}
+.au-welcome {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 12px 0 45px;
+}
+.au-welcome-copy {
+  padding-top: 65px;
+  color: white;
+}
+.au-welcome h1 {
+  color: #fff;
+  font-size: 39px;
+  line-height: 1.25;
+  letter-spacing: -0.8px;
+  max-width: 400px;
+  margin-bottom: 22px;
+}
+.au-welcome p {
+  font-size: 17px;
+  line-height: 1.7;
+  max-width: 400px;
+  color: #f6fbff;
+}
+.au-values {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 34px;
+}
+.au-values > span {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 17px;
+}
+.au-values svg {
+  background: #fff;
+  color: #0076e9;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border-radius: 7px;
+  box-shadow: 0 4px 10px #041e3630;
+}
+.au-values > span:first-child svg {
+  background: #ff9016;
+  color: white;
+}
+.au-login-main {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+.au-login-card {
+  background: #fffffff7;
+  border: 1px solid #e4edf7;
+  border-radius: 12px;
+  box-shadow: 0 18px 65px #092d4635;
+  padding: 39px 38px 32px;
+  width: 470px;
+  max-width: 100%;
+  color: #0a1943;
+}
+.au-login-card h2 {
+  font-size: 31px;
+  letter-spacing: -0.7px;
+  margin: 0 0 9px;
+  line-height: 1.2;
+}
+.au-login-card > p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #466393;
+  margin: 0 0 31px;
+}
+.au-login-card > label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+.au-input {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #d7e2f4;
+  border-radius: 6px;
+  background: #fff;
+  min-height: 44px;
+  padding: 0 12px;
+  color: #294b80;
+}
+.au-input input {
+  background: none;
+  border: 0;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  font-size: 13px;
+  color: #203d6a;
+  outline: none !important;
+  padding: 10px 0;
+}
+.au-input button {
+  display: flex;
+  color: #47648e;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+.au-input:focus-within {
+  border-color: #7dafff;
+  box-shadow: 0 0 0 2px #408fff10;
+}
+.au-login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 22px;
+  font-size: 12px;
+}
+.au-login-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.au-login-options input {
+  accent-color: #ff8009;
+  width: 16px;
+  height: 16px;
+}
+.au-login-options button {
+  color: #ff7900;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 12px;
+}
+.au-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 10px 17px;
+  background: linear-gradient(100deg, #ff9717, #ff7b02);
+  border: 1px solid #ff8c0d;
+  border-radius: 6px;
+  color: white;
+  font-size: 12px;
+  box-shadow: none;
+  white-space: nowrap;
+}
+.au-primary:disabled,
+.au-sso:disabled {
+  cursor: default;
+}
+.au-login-card .au-signin {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  font-size: 14px;
+  position: relative;
+}
+.au-signin svg {
+  position: absolute;
+  left: 16px;
+}
+.au-divider {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  margin: 25px 0;
+  color: #314f7a;
+  font-size: 11px;
+}
+.au-divider span {
+  height: 1px;
+  background: #dbe5f4;
+  flex: 1;
+}
+.au-sso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  width: 100%;
+  border: 1px solid #dce7f6;
+  background: linear-gradient(110deg, #fff, #f5faff);
+  border-radius: 6px;
+  min-height: 43px;
+  color: #102851;
+  font-size: 12px;
+  margin-bottom: 12px;
+  opacity: 1 !important;
+}
+.au-google {
+  font-size: 23px;
+  font-weight: 800;
+  color: #4285f4;
+  line-height: 1;
+}
+.au-microsoft {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 19px;
+  height: 19px;
+  gap: 2px;
+}
+.au-microsoft i {
+  background: #f25022;
+}
+.au-microsoft i:nth-child(2) {
+  background: #7fba00;
+}
+.au-microsoft i:nth-child(3) {
+  background: #00a4ef;
+}
+.au-microsoft i:nth-child(4) {
+  background: #ffb900;
+}
+.au-login-card .au-provider-note {
+  font-size: 10px;
+  margin: 3px 0 23px;
+  text-align: center;
+  color: #8194ae;
+}
+.au-login-card footer {
+  text-align: center;
+  color: #4d668e;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.au-setup {
+  font-size: 12px;
+  line-height: 1.7;
+  background: #edf6ff;
+  border: 1px solid #d6e9fc;
+  color: #3b6389;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin: -12px 0 22px;
+}
+.au-error {
+  font-size: 12px;
+  line-height: 1.6;
+  background: #fff0f4;
+  border: 1px solid #ffd6e2;
+  color: #b3264d;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.au-overlay {
+  position: fixed;
+  inset: 0;
+  background: #0b203d75;
+  backdrop-filter: blur(4px);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.au-dialog {
+  position: relative;
+  width: 460px;
+  max-width: 100%;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 22px 70px #02142a33;
+  padding: 38px 25px 25px;
+  text-align: center;
+  color: #10264e;
+}
+.au-dialog > svg {
+  color: #ff8009;
+  margin-bottom: 16px;
+}
+.au-dialog h2 {
+  font-size: 24px;
+  letter-spacing: -0.3px;
+  margin: 0 0 15px;
+}
+.au-dialog p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #425f89;
+  margin: 0 0 24px;
+}
+.au-close {
+  position: absolute;
+  right: 16px;
+  top: 15px;
+  border: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  color: #5e769a;
+  padding: 0;
+}
+.au-dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.08fr;
+  gap: 12px;
+}
+.au-dialog-actions > button {
+  border: 1px solid #dce7f6;
+  min-height: 42px;
+  border-radius: 6px;
+  font-size: 12px;
+  background: white;
+  color: #1d3765;
+}
+.au-dialog-actions > .au-primary {
+  background: linear-gradient(100deg, #ff9717, #ff7b02);
+  border-color: #ff850b;
+  color: white;
+}
+.au-dialog > .au-primary {
+  margin-top: 0;
+}
+.au-header-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #f57d08;
+  font-size: 11px;
+  padding: 8px;
+  border: 1px solid #ffe3c5;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.au-loggedout {
+  min-height: 100vh;
+  background: #f9fcff;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  overflow: hidden;
+}
+.au-loggedout > section {
+  position: relative;
+  z-index: 1;
+  background:
+    linear-gradient(110deg, #062c51e6, #1253a965 83%, #fff4),
+    url("/school-campus.png") 38% center/cover;
+  padding: 55px 9%;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+}
+.au-loggedout .au-brand strong {
+  font-size: 27px;
+}
+.au-loggedout section > div:last-child {
+  padding: 70px 0 100px;
+}
+.au-loggedout h1 {
+  color: #fff;
+  font-size: 39px;
+  line-height: 1.25;
+  letter-spacing: -0.8px;
+  margin: 0 0 20px;
+}
+.au-loggedout p {
+  font-size: 17px;
+  line-height: 1.8;
+  margin: 0 0 25px;
+  color: #f2f8ff;
+}
+.au-loggedout section button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #15396b33;
+  border: 2px solid #ff9e39;
+  border-radius: 6px;
+  color: #ffc078;
+  padding: 13px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  width: max-content;
+}
+.au-loggedout aside {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: radial-gradient(ellipse at center, #e9f5ff, #fff 73%);
+  padding: 30px;
+}
+.au-loggedout aside:before {
+  content: "";
+  position: absolute;
+  top: -5%;
+  bottom: -5%;
+  left: -11%;
+  width: 25%;
+  border-radius: 50%;
+  background: #f9fcff;
+  z-index: 2;
+}
+.au-loggedout aside svg {
+  width: 100%;
+  max-width: 480px;
+  z-index: 3;
+}
+.au-settings-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 13px;
+  min-height: 38px;
+}
+.au-settings-toolbar > span {
+  margin-right: auto;
+  font-size: 11px;
+  color: #65858f;
+}
+.au-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 11px;
+  min-height: 32px;
+  border: 1px solid #d8e5f6;
+  background: white;
+  border-radius: 5px;
+  color: #173769;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.au-settings-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.au-setting-panel {
+  background: white;
+  border: 1px solid #eaf0f8;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.au-setting-panel > header {
+  padding: 18px 20px 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #087aff;
+}
+.au-setting-panel > header > div {
+  flex: 1;
+}
+.au-setting-panel h2 {
+  color: #10234c;
+  font-size: 16px;
+  margin: 0 0 5px;
+  line-height: 1.3;
+}
+.au-setting-panel header p {
+  font-size: 11px;
+  color: #56729c;
+  line-height: 1.6;
+  margin: 0;
+}
+.au-setting-body {
+  padding: 7px 20px 18px;
+}
+.au-setting-switch {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  color: #087bff;
+}
+.au-setting-switch > div {
+  flex: 1;
+  min-width: 0;
+}
+.au-setting-switch strong,
+.au-setting-field strong {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #182c56;
+  font-weight: 600;
+  display: block;
+}
+.au-setting-switch p,
+.au-setting-field p {
+  color: #5b759a;
+  font-size: 10px;
+  line-height: 1.6;
+  margin: 3px 0 0;
+}
+.au-setting-switch > button {
+  height: 25px;
+  width: 46px;
+  min-width: 46px;
+  background: #a5b6cf;
+  border: 0;
+  border-radius: 20px;
+  padding: 3px;
+}
+.au-setting-switch > button > span {
+  display: block;
+  height: 19px;
+  width: 19px;
+  border-radius: 100%;
+  background: white;
+  box-shadow: 0 1px 3px #0002;
+}
+.au-setting-switch > button[aria-checked="true"] {
+  background: #00c387;
+}
+.au-setting-switch > button[aria-checked="true"] > span {
+  transform: translateX(21px);
+}
+.au-setting-switch > button:disabled {
+  opacity: 0.75;
+}
+.au-setting-field {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 13px 0;
+}
+.au-setting-field > div {
+  flex: 1;
+  min-width: 0;
+}
+.au-setting-field select {
+  border: 1px solid #dce7f6;
+  border-radius: 5px;
+  padding: 7px 10px;
+  background: white;
+  color: #345383;
+  font-size: 10px;
+  min-width: 112px;
+  max-width: 155px;
+  min-height: 32px;
+}
+.au-setting-note {
+  font-size: 10px;
+  color: #7c91ad;
+  line-height: 1.8;
+  padding: 8px 0;
+  margin: 0;
+}
+.au-setting-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.au-setting-stack .au-setting-panel:first-child > header > svg {
+  color: #ff8309;
+}
+.au-session-summary {
+  padding: 10px 20px 18px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  color: #1a4c91;
+}
+.au-session-summary > div {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.au-session-summary strong {
+  display: block;
+  font-size: 11px;
+  color: #243c69;
+}
+.au-session-summary small {
+  display: block;
+  font-size: 10px;
+  margin-top: 4px;
+  color: #627ba0;
+}
+.au-session-summary > button {
+  grid-column: 2;
+  grid-row: 1/3;
+  align-self: center;
+}
+.au-settings-loading {
+  padding: 30px;
+  color: #6580a4;
+}
+.au-session-list {
+  margin-top: 15px;
+}
+.au-session-scroll {
+  overflow: auto;
+  padding: 12px 20px;
+}
+.au-session-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.au-session-scroll th {
+  background: #f4f8fc;
+  color: #28456e;
+  font-size: 11px;
+  padding: 11px;
+  text-align: left;
+}
+.au-session-scroll td {
+  padding: 11px;
+  border-bottom: 1px solid #edf3f8;
+  color: #526d94;
+}
+.au-session-list > .au-setting-note {
+  padding: 0 20px 17px;
+}
+.au-general-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin-bottom: 15px;
+}
+.au-general-tabs button {
+  background: #fff;
+  border: 1px solid #edf1f8;
+  border-radius: 7px;
+  padding: 16px 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  color: #087bff;
+  min-height: 68px;
+  white-space: nowrap;
+}
+.au-general-tabs span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #10264f;
+}
+.au-general-tabs button[aria-selected="true"] {
+  border-bottom: 3px solid #ff850a;
+  background: #fff3e8;
+  color: #ff8105;
+}
+.au-general-tabs button[aria-selected="true"] span {
+  color: #eb7103;
+}
+.au-general-preferences .st-panel {
+  max-width: 650px;
+}
+.au-general-preferences .st-panel-body {
+  padding: 20px;
+}
+.au-header-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (min-width: 1450px) {
+  .au-setting-body {
+    padding-bottom: 24px;
+  }
+  .au-settings-columns
+    .au-setting-panel:first-child
+    .au-setting-body
+    > .au-setting-switch {
+    padding-top: 17px;
+    padding-bottom: 17px;
+  }
+  .au-settings-columns > .au-setting-panel {
+    min-height: 680px;
+  }
+}
+@media (max-width: 1100px) {
+  .au-login {
+    padding: 35px 4%;
+    gap: 5%;
+  }
+  .au-login-card {
+    padding: 30px 25px;
+  }
+  .au-welcome h1 {
+    font-size: 33px;
+  }
+  .au-welcome p {
+    font-size: 15px;
+  }
+  .au-brand strong {
+    font-size: 24px;
+  }
+  .au-settings-columns {
+    gap: 12px;
+  }
+  .au-setting-body {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .au-setting-switch {
+    gap: 9px;
+  }
+  .au-setting-panel > header {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .au-general-tabs button {
+    padding: 13px 8px;
+    gap: 7px;
+  }
+  .au-general-tabs span {
+    font-size: 10px;
+  }
+  .au-general-tabs svg {
+    width: 20px;
+  }
+  .au-header-logout span {
+    display: none;
+  }
+  .au-setting-field select {
+    min-width: 100px;
+  }
+  .au-loggedout > section {
+    padding: 35px 7%;
+  }
+  .au-loggedout h1 {
+    font-size: 33px;
+  }
+}
+@media (max-width: 850px) {
+  .au-settings-columns {
+    grid-template-columns: 1fr;
+  }
+  .au-general-tabs {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .au-header-logout {
+    margin-right: 2px;
+  }
+  .au-setting-body {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .au-setting-switch strong,
+  .au-setting-field strong {
+    font-size: 12px;
+  }
+}
+@media (max-width: 700px) {
+  .au-login {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 17px;
+    gap: 25px;
+    min-height: 100vh;
+    background-position: 38% center;
+  }
+  .au-welcome {
+    padding: 0;
+    width: 100%;
+    align-self: auto;
+  }
+  .au-welcome .au-brand {
+    justify-content: center;
+  }
+  .au-brand strong {
+    font-size: 23px;
+  }
+  .au-brand small {
+    font-size: 11px;
+  }
+  .au-brand svg {
+    width: 38px;
+  }
+  .au-welcome-copy {
+    display: none;
+  }
+  .au-login-card {
+    padding: 28px 24px;
+    width: 440px;
+  }
+  .au-login-card h2 {
+    font-size: 28px;
+  }
+  .au-login-card > p {
+    font-size: 12px;
+    margin-bottom: 25px;
+  }
+  .au-login-main {
+    min-height: 0;
+  }
+  .au-login-card footer {
+    font-size: 10px;
+  }
+  .au-loggedout {
+    grid-template-columns: 1fr;
+    position: relative;
+    min-height: 100vh;
+  }
+  .au-loggedout > section {
+    min-height: 100vh;
+    padding: 35px 30px;
+    z-index: 2;
+    background:
+      linear-gradient(110deg, #052746e8, #1c63a28a),
+      url("/school-campus.png") 40% center/cover;
+    justify-content: flex-start;
+    gap: 50px;
+  }
+  .au-loggedout section > div:last-child {
+    padding: 35px 0 0;
+  }
+  .au-loggedout h1 {
+    font-size: 33px;
+  }
+  .au-loggedout p {
+    font-size: 15px;
+  }
+  .au-loggedout aside {
+    display: none;
+  }
+  .au-dialog {
+    padding: 33px 20px 23px;
+  }
+  .au-dialog h2 {
+    font-size: 22px;
+  }
+  .au-dialog p {
+    font-size: 12px;
+  }
+  .au-settings-toolbar {
+    flex-wrap: wrap;
+  }
+  .au-settings-toolbar > span {
+    flex-basis: 100%;
+  }
+  .au-settings-toolbar > .au-primary {
+    margin-left: auto;
+  }
+  .au-general-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .au-general-tabs button {
+    min-height: 58px;
+  }
+  .au-general-tabs button:last-child {
+    grid-column: 1/-1;
+  }
+  .au-setting-panel h2 {
+    font-size: 15px;
+  }
+  .au-setting-panel > header {
+    gap: 12px;
+  }
+  .au-setting-switch {
+    padding: 13px 0;
+  }
+  .au-session-summary {
+    padding: 14px;
+    gap: 14px;
+  }
+  .au-session-summary > button {
+    grid-column: 1/-1;
+    grid-row: auto;
+    justify-self: start;
+  }
+  .au-setting-field {
+    gap: 10px;
+  }
+  .au-setting-field select {
+    max-width: 130px;
+  }
+  .au-header-logout {
+    padding: 6px;
+  }
+  .au-header-logout svg {
+    width: 17px;
+  }
+  .au-session-list > header {
+    flex-wrap: wrap;
+  }
+}

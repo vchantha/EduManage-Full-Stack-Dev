@@ -1,8 +1,10 @@
+from django.test import override_settings
 import json
 
 from django.test import Client, TestCase
 
 
+@override_settings(EDUMANAGE_AUTH_REQUIRED=False)
 class ExaminationTests(TestCase):
     endpoint = "/api/v1/examinations/"
 

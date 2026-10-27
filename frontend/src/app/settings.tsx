@@ -1,4 +1,6 @@
 "use client";
+import AuthSecuritySettings from "./auth-settings";
+import { LogOut, LockKeyhole } from "lucide-react";
 import { initialPlanning, type AcademicYear, type Term } from "./planning-data";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -262,6 +264,7 @@ export default function SchoolSettings({
   notify: (s: string) => void;
   onAcademic: () => void;
 }) {
+  const [generalTab, setGeneralTab] = useState("School Information");
   const [envelope, setEnvelope] = useState<Envelope | null>(null),
     [draft, setDraft] = useState<SettingsData | null>(null),
     [info, setInfo] = useState<SystemInfo | null>(null),
@@ -729,35 +732,70 @@ export default function SchoolSettings({
         Settings <span>›</span> {section}
       </div>
       <div className="st-heading">
-        <h1>Settings</h1>
+        <h1>{section === "General" ? "General Settings" : "Settings"}</h1>
         <p>
-          Manage your school system configuration, academic settings, users, and
-          preferences.
+          {section === "General"
+            ? "Configure basic system settings and user session options."
+            : "Manage your school system configuration, academic settings, users, and preferences."}
         </p>
       </div>
-      <div className="st-tabs" role="tablist" aria-label="Settings sections">
-        {settingsSections.slice(0, 6).map((s, i) => {
-          const I = icons[i],
-            active =
-              section === s ||
-              (i === 5 && settingsSections.indexOf(section) > 5);
-          return (
-            <button
-              type="button"
-              role="tab"
-              aria-selected={active}
-              key={s}
-              onClick={() => route(s)}
-            >
-              <I size={27} />
-              <span>
-                <strong>{i === 5 ? "System" : s}</strong>
-                <small>{descriptions[i]}</small>
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {section === "General" ? (
+        <div
+          className="au-general-tabs"
+          role="tablist"
+          aria-label="General settings sections"
+        >
+          {[
+            "School Information",
+            "System Preferences",
+            "Login & Logout",
+            "Session & Security",
+            "Appearance",
+          ].map((name, i) => {
+            const Icon = [School, Settings, LogOut, LockKeyhole, Palette][i];
+            return (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={generalTab === name}
+                key={name}
+                onClick={() =>
+                  name === "Appearance"
+                    ? route("Appearance")
+                    : setGeneralTab(name)
+                }
+              >
+                <Icon size={24} />
+                <span>{name}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="st-tabs" role="tablist" aria-label="Settings sections">
+          {settingsSections.slice(0, 6).map((s, i) => {
+            const I = icons[i],
+              active =
+                section === s ||
+                (i === 5 && settingsSections.indexOf(section) > 5);
+            return (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={active}
+                key={s}
+                onClick={() => route(s)}
+              >
+                <I size={27} />
+                <span>
+                  <strong>{i === 5 ? "System" : s}</strong>
+                  <small>{descriptions[i]}</small>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
       {match && (
         <div className="st-search-results">
           <Search size={18} />
@@ -785,7 +823,24 @@ export default function SchoolSettings({
           </button>
         </div>
       )}
-      {section === "General" ? (
+      {section === "General" &&
+      (generalTab === "Login & Logout" ||
+        generalTab === "Session & Security") ? (
+        <AuthSecuritySettings
+          mode={generalTab === "Login & Logout" ? "login" : "sessions"}
+        />
+      ) : section === "General" && generalTab === "System Preferences" ? (
+        <div className="au-general-preferences">
+          <Panel
+            title="System Preferences"
+            note="Configure general school preferences"
+            icon={Settings}
+            action={saveButton}
+          >
+            {preferences}
+          </Panel>
+        </div>
+      ) : section === "General" ? (
         <div className="st-columns">
           <div className="st-stack">
             <Panel
@@ -1219,10 +1274,10 @@ export default function SchoolSettings({
               </div>
             </div>
             <p className="st-note">
-              The local demonstration has no sign-in or permission enforcement.
-              Role labels in the directory do not provide access control. Full
-              database backup and authentication must be configured separately
-              before shared use.
+              Administrator sign-in is required for the school workspace. Role
+              labels in the directory do not grant access. Use General Settings
+              to manage login policy and your active sessions. Full database
+              backups are configured separately.
             </p>
           </Panel>
           <Panel
