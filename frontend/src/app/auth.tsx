@@ -33,6 +33,7 @@ export type AuthPolicy = {
   idleMinutes: number;
   showLogoutHeader: boolean;
 };
+export type Providers = Record<"google" | "microsoft", { configured: boolean; enabled: boolean }>;
 type User = { id: number; username: string; name: string; role: string };
 type AuthContextValue = {
   user: User | null;
@@ -75,6 +76,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     [show, setShow] = useState(false),
     [remember, setRemember] = useState(false),
     [help, setHelp] = useState(false);
+  const [providers, setProviders] = useState<Providers | null>(null);
+  const [linkHint, setLinkHint] = useState<{ provider: string; subject: string } | null>(null);
   const csrf = useRef(""),
     activity = useRef(false),
     lastActivity = useRef(Date.now()),
@@ -93,6 +96,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     csrf.current = p.csrfToken;
     setPolicy(p.policy);
     setSetup(p.setupRequired);
+    setProviders(p.providers);
+    if (p.ssoError) setError(p.ssoError);
+    setLinkHint(p.ssoLinkHint || null);
     setUser(p.user);
     setView(p.authenticated ? "app" : "login");
   };
@@ -233,6 +239,24 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       setBusy(false);
     }
   };
+  const signInProvider = async (provider: "google" | "microsoft") => {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const r = await fetch(`/api/auth/sso/${provider}/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrf.current },
+        body: JSON.stringify({ remember }),
+      });
+      const p = await r.json();
+      if (!r.ok) throw Error(p.error || "Could not start provider sign-in.");
+      window.location.assign(p.url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not start provider sign-in.");
+      setBusy(false);
+    }
+  };
   if (view === "loading")
     return (
       <div className="au-loading">
@@ -341,6 +365,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
                 {error}
               </div>
             )}
+            {linkHint && <div className="au-setup">Give your school administrator this verified {linkHint.provider} account ID to link your account: <code style={{ overflowWrap: "anywhere" }}>{linkHint.subject}</code></div>}
             <button
               type="submit"
               className="au-primary au-signin"
@@ -354,14 +379,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
               OR
               <span />
             </div>
-            <button type="button" className="au-sso" disabled>
+            <button type="button" className="au-sso" disabled={busy || !providers?.google.configured || !providers.google.enabled} onClick={() => signInProvider("google")}>
               <ProviderMark provider="Google" />Continue with Google
             </button>
-            <button type="button" className="au-sso" disabled>
+            <button type="button" className="au-sso" disabled={busy || !providers?.microsoft.configured || !providers.microsoft.enabled} onClick={() => signInProvider("microsoft")}>
               <ProviderMark provider="Microsoft" />
               Continue with Microsoft
             </button>
-            <p className="au-provider-note">Single sign-on is not connected.</p>
+            <p className="au-provider-note">{providers?.google.configured && providers.google.enabled || providers?.microsoft.configured && providers.microsoft.enabled ? "Use a provider account linked by your school administrator." : "Provider sign-in needs administrator setup."}</p>
             <footer>Don’t have an account? Contact your administrator.</footer>
           </form>
         </main>

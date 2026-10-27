@@ -33,7 +33,7 @@ export function LoginPreview({ policy }: { policy: AuthPolicy }) {
           <div className="au-divider"><span />or continue with<span /></div>
           {(["Google", "Microsoft"] as const).map(provider => <div key={provider} className="au-sso"><ProviderMark provider={provider} />Continue with {provider}</div>)}
         </div>
-        <p className="au-preview-caption">Preview only. Provider buttons become available after setup.</p>
+        <p className="au-preview-caption">Preview only. Actual sign-in uses the enabled providers and linked school accounts.</p>
       </div>
       {policy.logoutConfirmation && <div className="au-logout-preview"><LogOut size={28} /><div><h3>Confirm Logout</h3><p>Are you sure you want to log out?</p></div><div className="au-preview-actions"><span>Cancel</span><span>Logout</span></div></div>}
     </section>

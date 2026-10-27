@@ -58,6 +58,19 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_TZ = True
 EDUMANAGE_AUTH_REQUIRED = True
+EDUMANAGE_SSO = {
+    key: os.environ.get(f"EDUMANAGE_{key}", "")
+    for key in (
+        "PUBLIC_ORIGIN",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_SUBJECTS",
+        "MICROSOFT_CLIENT_ID",
+        "MICROSOFT_CLIENT_SECRET",
+        "MICROSOFT_TENANT_ID",
+        "MICROSOFT_SUBJECTS",
+    )
+}
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = os.environ.get("DJANGO_SECURE_COOKIES", "false").lower() == "true"

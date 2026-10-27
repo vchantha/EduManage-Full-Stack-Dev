@@ -9,8 +9,11 @@ from .finance_views import finance
 from .settings_views import school_settings
 from .attendance_views import attendance
 from .auth_views import auth_session, auth_login, auth_logout, auth_settings, auth_sessions
+from .sso import sso_start, sso_callback
 
 urlpatterns = [
+    path("auth/sso/<str:provider>/start/", sso_start, name="sso-start"),
+    path("auth/sso/<str:provider>/callback/", sso_callback, name="sso-callback"),
     path("auth/session/", auth_session, name="auth-session"),
     path("auth/login/", auth_login, name="auth-login"),
     path("auth/logout/", auth_logout, name="auth-logout"),

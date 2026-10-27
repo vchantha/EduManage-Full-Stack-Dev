@@ -86,6 +86,11 @@ class SchoolAccessMiddleware:
             "/api/v1/auth/login/",
             "/api/v1/auth/logout/",
         }
+        public = public or request.path in {
+            f"/api/v1/auth/sso/{provider}/{action}/"
+            for provider in ("google", "microsoft")
+            for action in ("start", "callback")
+        }
         if request.user.is_authenticated:
             policy = auth_policy()
             tracked = SchoolSession.objects.filter(session_key=request.session.session_key).first()
@@ -98,7 +103,8 @@ class SchoolAccessMiddleware:
                 and policy["idleEnabled"]
                 and tracked.last_seen + timedelta(minutes=policy["idleMinutes"]) <= timezone.now()
             )
-            if expired or password_expired(request.user, policy):
+            uses_password = request.session.get("auth_method", "password") == "password"
+            if expired or (uses_password and password_expired(request.user, policy)):
                 if tracked:
                     tracked.delete()
                 logout(request)

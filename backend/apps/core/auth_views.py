@@ -15,6 +15,7 @@ from django.views.decorators.http import require_http_methods
 
 from .auth_policy import AUTH_DEFAULTS, auth_policy, password_expired
 from .models import AcademicWorkspace, LoginThrottle, SchoolSession
+from .sso import configuration, provider_status
 
 DUMMY_PASSWORD = make_password("not-a-real-account-password")
 
@@ -41,6 +42,9 @@ def auth_session(request):
             "setupRequired": not get_user_model()
             .objects.filter(is_active=True, is_staff=True)
             .exists(),
+            "providers": provider_status(),
+            "ssoError": request.session.pop("sso_error", ""),
+            "ssoLinkHint": request.session.pop("sso_link_hint", None),
         }
     )
 
@@ -127,6 +131,7 @@ def auth_login(request):
         LoginThrottle.objects.filter(key__in=keys).delete()
         previous_key = request.session.session_key
         login(request, user)
+        request.session["auth_method"] = "password"
         if previous_key:
             SchoolSession.objects.filter(session_key=previous_key).delete()
         request.session.set_expiry(14 * 86400 if remember and policy["rememberMe"] else 0)
@@ -178,6 +183,7 @@ def auth_settings(request):
             {
                 "policy": auth_policy(),
                 "revision": saved.data["revision"] if saved else 0,
+                "providers": provider_status(),
                 "csrfToken": get_token(request),
             }
         )
@@ -195,10 +201,13 @@ def auth_settings(request):
         for key, value in AUTH_DEFAULTS.items():
             if type(policy[key]) is not type(value):
                 raise ValueError("Invalid security setting type.")
-        if not policy["passwordLogin"] or policy["googleLogin"] or policy["microsoftLogin"]:
-            raise ValueError(
-                "Password sign-in must remain enabled. Google and Microsoft SSO are not configured."
-            )
+        if not policy["passwordLogin"]:
+            raise ValueError("Keep password sign-in enabled for administrator recovery.")
+        for provider in ("google", "microsoft"):
+            if policy[f"{provider}Login"] and not configuration(provider):
+                raise ValueError(
+                    f"Configure {provider.title()} credentials and account links on the server first."
+                )
         for key, options in {
             "maxAttempts": {3, 5, 10},
             "lockMinutes": {15, 30, 60},

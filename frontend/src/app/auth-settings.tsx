@@ -11,7 +11,7 @@ import {
   Monitor,
   Check,
 } from "lucide-react";
-import { AuthPolicy, useSchoolAuth } from "./auth";
+import { AuthPolicy, type Providers, useSchoolAuth } from "./auth";
 import { LoginPreview, ProviderMark } from "./auth-preview";
 type ActiveSession = {
   id: number;
@@ -71,6 +71,7 @@ export default function AuthSecuritySettings({
     [list, setList] = useState(mode === "sessions"),
     [revoke, setRevoke] = useState<ActiveSession | null>(null);
   const csrf = useRef("");
+  const [providers, setProviders] = useState<Providers | null>(null);
   const loadSessions = async () => {
     const r = await fetch("/api/auth/sessions", { cache: "no-store" });
     if (!r.ok) throw Error("Could not load your active sessions.");
@@ -88,6 +89,7 @@ export default function AuthSecuritySettings({
           setDraft(p.policy);
           setSaved(p.policy);
           setRevision(p.revision);
+          setProviders(p.providers);
         }
       })
       .catch((e) => {
@@ -270,11 +272,13 @@ export default function AuthSecuritySettings({
                   <div key={name} className="au-provider-row">
                     <ProviderMark provider={name} />
                     <div><strong>{name}</strong><p>Allow school accounts to sign in with {name}</p></div>
-                    <span className="au-provider-status">Not connected</span>
+                    <span className="au-provider-status">{providers?.[name === "Google" ? "google" : "microsoft"].configured ? policy[name === "Google" ? "googleLogin" : "microsoftLogin"] ? "Enabled" : "Ready to enable" : "Needs setup"}</span>
                     <button type="button" className="au-outline" aria-label={`Configure ${name} sign-in`} onClick={() => setProvider(name)}>Configure</button>
                   </div>
                 ))}
               </div>
+              <Switch title="Continue with Google" note="Enable Google sign-in for linked administrator accounts." value={policy.googleLogin} onChange={v => change("googleLogin", v)} disabled={busy || (!providers?.google.configured && !policy.googleLogin)} />
+              <Switch title="Continue with Microsoft" note="Enable Microsoft sign-in for linked administrator accounts." value={policy.microsoftLogin} onChange={v => change("microsoftLogin", v)} disabled={busy || (!providers?.microsoft.configured && !policy.microsoftLogin)} />
               <Switch
                 icon={Clock}
                 title="Enable Remember Me"
@@ -447,8 +451,8 @@ export default function AuthSecuritySettings({
           }}>
             <ProviderMark provider={provider} />
             <h2 id="au-provider-title">Connect {provider}</h2>
-            <p>Continue with {provider} is not connected yet. Your school administrator needs to register the school application with {provider} and configure sign-in on the server.</p>
-            <div className="au-provider-steps"><strong>Setup requirements</strong><ol><li>A school-managed {provider} application.</li><li>Approved redirect address and account access rules.</li><li>Server-side credentials and a verified sign-in connection.</li></ol></div>
+            <p>{providers?.[provider === "Google" ? "google" : "microsoft"].configured ? `The ${provider} server configuration is ready. Use the provider switch and Save Changes to enable or disable sign-in.` : `Register the school application with ${provider}, then save its credentials and linked account IDs in the server’s local environment file.`}</p>
+            <div className="au-provider-steps"><strong>Setup requirements</strong><ol><li>A school-managed {provider} web application.</li><li>Callback address: <code>/api/auth/sso/{provider.toLowerCase()}/callback</code> on your EduManage site.</li><li>Server-side client ID and secret{provider === "Microsoft" ? ", plus the school tenant ID" : ""}.</li><li>Link the provider’s subject ID to an existing school administrator. See SSO-SETUP.md in the project.</li><li>Restart the backend, enable the provider here, and Save Changes.</li></ol></div>
             <p>Keep provider secrets on the server. The preview does not enable sign-in or change access to your school.</p>
             <button id="au-provider-close" type="button" className="au-primary" onClick={() => setProvider(null)}>Back to Settings</button>
           </section>

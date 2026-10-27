@@ -2,7 +2,7 @@ services:
   backend:
     build:
       context: ./backend
-    command: [sh, -c, "python manage.py migrate --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --access-logfile -"]
+    command: [sh, -c, "python manage.py migrate --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --access-logfile - --access-logformat '%(h)s %(m)s %(U)s %(s)s'"]
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
       DJANGO_DEBUG: "false"
@@ -13,6 +13,14 @@ services:
       DATABASE_HOST: postgres
       DATABASE_PORT: "5432"
       REDIS_URL: redis://redis:6379/0
+      EDUMANAGE_PUBLIC_ORIGIN: ${EDUMANAGE_PUBLIC_ORIGIN:-http://localhost:3000}
+      EDUMANAGE_GOOGLE_CLIENT_ID: ${EDUMANAGE_GOOGLE_CLIENT_ID:-}
+      EDUMANAGE_GOOGLE_CLIENT_SECRET: ${EDUMANAGE_GOOGLE_CLIENT_SECRET:-}
+      EDUMANAGE_GOOGLE_SUBJECTS: ${EDUMANAGE_GOOGLE_SUBJECTS:-}
+      EDUMANAGE_MICROSOFT_CLIENT_ID: ${EDUMANAGE_MICROSOFT_CLIENT_ID:-}
+      EDUMANAGE_MICROSOFT_CLIENT_SECRET: ${EDUMANAGE_MICROSOFT_CLIENT_SECRET:-}
+      EDUMANAGE_MICROSOFT_TENANT_ID: ${EDUMANAGE_MICROSOFT_TENANT_ID:-}
+      EDUMANAGE_MICROSOFT_SUBJECTS: ${EDUMANAGE_MICROSOFT_SUBJECTS:-}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
